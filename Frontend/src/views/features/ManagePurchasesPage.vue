@@ -21,21 +21,18 @@
         class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </div>
-
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-8">
       <p class="text-lg text-gray-600">Memuat data pembelian...</p>
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mt-4"></div>
     </div>
 
-    <!-- Empty State -->
     <div v-else-if="filteredPurchases.length === 0" class="text-center py-8">
       <p class="text-lg text-gray-600">Tidak ada data pembelian yang tersedia atau sesuai filter.</p>
     </div>
 
-    <!-- Data Table -->
     <div v-else class="bg-white shadow-md rounded-lg overflow-x-auto">
-      <!-- Removed overflow-hidden to allow dropdown to show -->
+
       <table class="min-w-full leading-normal">
         <thead>
           <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
@@ -75,8 +72,7 @@
                 @click="toggleActions(purchase._id, index)"
                 :disabled="actionLoading"
                 class="text-blue-600 hover:text-blue-900 disabled:text-blue-300 px-3 py-1 rounded border border-blue-600 hover:border-blue-900 disabled:border-blue-300 transition-colors flex items-center space-x-1"
-                title="Aksi"
-              >
+                title="Aksi">
                 <span>Aksi</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>

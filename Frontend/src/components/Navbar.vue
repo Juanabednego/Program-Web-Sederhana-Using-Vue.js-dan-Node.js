@@ -9,7 +9,7 @@
 
       <div class="hidden md:flex space-x-6">
         <template v-if="role === 'admin'">
-          <router-link to="/dashboard" class="hover:bg-gray-700 px-4 py-2 rounded-lg">Kelola Akun</router-link>
+          <router-link to="/dashboard" class="hover:bg-gray-700 px-4 py-2 rounded-lg">Dashboard</router-link>
           <router-link to="/kelola-pipa" class="hover:bg-gray-700 px-4 py-2 rounded-lg">Kelola Pipa</router-link>
           <router-link to="/purchases" class="hover:bg-gray-700 px-4 py-2 rounded-lg">Kelola Pembelian</router-link>
         </template>
@@ -42,7 +42,7 @@
 
     <div v-if="isMenuOpen" class="md:hidden flex flex-col mt-4 space-y-2">
       <template v-if="role === 'admin'">
-        <router-link to="/dashboard" class="hover:bg-gray-700 px-4 py-2 rounded-lg" @click="toggleMenu">Kelola Akun</router-link>
+        <router-link to="/dashboard" class="hover:bg-gray-700 px-4 py-2 rounded-lg" @click="toggleMenu">Dashboard</router-link>
         <router-link to="/kelola-pipa" class="hover:bg-gray-700 px-4 py-2 rounded-lg" @click="toggleMenu">Kelola Pipa</router-link>
         <router-link to="/purchases" class="hover:bg-gray-700 px-4 py-2 rounded-lg" @click="toggleMenu">Kelola Pembelian</router-link>
       </template>

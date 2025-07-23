@@ -349,5 +349,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Anda bisa menambahkan gaya kustom di sini */
+/* */
 </style>
