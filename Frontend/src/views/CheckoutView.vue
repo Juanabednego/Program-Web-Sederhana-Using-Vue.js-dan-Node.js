@@ -57,19 +57,7 @@
               <template v-else-if="paymentMethod === 'OVO'">
                 Kirim pembayaran ke <strong>0812-9876-5432</strong>
               </template>
-            </div>
-
-            <div class="mt-4" v-if="paymentMethod === 'Transfer Bank' || paymentMethod === 'Dana' || paymentMethod === 'OVO'">
-              <label>Bukti Transfer / Pembayaran (JPG/PNG/GIF, maks 5MB)</label>
-              <input
-                type="file"
-                @change="handleFileUpload"
-                accept="image/*"
-                :required="requiresProof"
-                class="block mt-1"
-              />
-              <p v-if="proofOfTransferFile" class="text-sm mt-1">File: {{ proofOfTransferFile.name }}</p>
-              <p v-if="fileError" class="text-red-500">{{ fileError }}</p>
+              <p class="mt-2">Anda akan menerima email invoice dengan instruksi pembayaran dan link untuk mengunggah bukti transfer.</p>
             </div>
 
             <div class="mt-4">
@@ -78,8 +66,8 @@
             </div>
 
             <button type="submit" class="mt-4 w-full bg-blue-600 text-white p-3 rounded"
-              :disabled="!agreedToTerms || (requiresProof && !proofOfTransferFile) || loading">
-              {{ loading ? 'Memproses...' : 'Bayar Sekarang' }}
+              :disabled="!agreedToTerms || loading">
+              {{ loading ? 'Memproses Pesanan...' : 'Buat Pesanan' }}
             </button>
 
             <p v-if="error" class="text-red-500 mt-2">{{ error }}</p>
@@ -120,7 +108,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useCartStore } from '../stores/cart';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import BE_PRE_URL from '../url/index.js';
+import BE_PRE_URL from '../url/index.js'; // Pastikan path ini benar
 
 const router = useRouter();
 const cartStore = useCartStore();
@@ -130,8 +118,6 @@ const paymentMethod = ref('Transfer Bank'); // Default value
 const agreedToTerms = ref(false);
 const loading = ref(false);
 const error = ref(null);
-const fileError = ref(null);
-const proofOfTransferFile = ref(null);
 
 const shippingPrice = ref(10000); // Contoh biaya ongkir
 const taxRate = ref(0.10); // Pajak 10%
@@ -144,11 +130,6 @@ const itemsPrice = computed(() => cartStore.cartSubtotal);
 const taxPrice = computed(() => itemsPrice.value * taxRate.value);
 const totalPrice = computed(() => itemsPrice.value + shippingPrice.value + taxPrice.value);
 
-const requiresProof = computed(() => {
-  const methodsRequiringProof = ['Transfer Bank', 'Dana', 'OVO'];
-  return methodsRequiringProof.includes(paymentMethod.value);
-});
-
 const goBackToCart = () => router.push('/cart');
 
 // Helper: Ambil user dan token dari localStorage
@@ -156,8 +137,8 @@ function getUserFromLocalStorage() {
   const user = localStorage.getItem('userData');
   const token = localStorage.getItem('jwt');
   console.log('[CheckoutView] Getting user from local storage:');
-  console.log('  userData:', user ? JSON.parse(user) : 'Not found');
-  console.log('  jwt token:', token ? 'Found (length: ' + token.length + ')' : 'Not found');
+  console.log('   userData:', user ? JSON.parse(user) : 'Not found');
+  console.log('   jwt token:', token ? 'Found (length: ' + token.length + ')' : 'Not found');
 
   if (!user || !token) {
     console.log('[CheckoutView] User data or token not found in local storage.');
@@ -197,7 +178,7 @@ onMounted(() => {
   if (cartStore.items.length === 0) {
     console.warn('[CheckoutView] Cart is empty. Redirecting to products page.');
     alert('Keranjang belanja Anda kosong, silakan tambahkan produk.');
-    router.push('/products');
+    router.push('/products'); // Atau ke halaman produk utama Anda
     return;
   }
 
@@ -205,43 +186,15 @@ onMounted(() => {
   console.log('[CheckoutView] Checkout page ready.');
 });
 
-const handleFileUpload = (event) => {
-  const file = event.target.files[0];
-  fileError.value = null;
-  console.log('[CheckoutView] File selected for upload:', file ? file.name : 'No file');
-
-  const allowed = ['image/jpeg', 'image/png', 'image/gif'];
-  const maxFileSize = 5 * 1024 * 1024; // 5MB
-
-  if (file) {
-    if (!allowed.includes(file.type)) {
-      fileError.value = 'Hanya file gambar (JPG, PNG, GIF) yang diizinkan.';
-      proofOfTransferFile.value = null;
-      console.warn('[CheckoutView] File type not allowed:', file.type);
-    } else if (file.size > maxFileSize) {
-      fileError.value = `Ukuran file maksimal 5MB. File Anda ${Math.round(file.size / 1024 / 1024)}MB.`;
-      proofOfTransferFile.value = null;
-      console.warn('[CheckoutView] File size too large:', file.size);
-    } else {
-      proofOfTransferFile.value = file;
-      console.log('[CheckoutView] Valid file selected:', file.name, 'Size:', file.size, 'bytes');
-    }
-  } else {
-    proofOfTransferFile.value = null;
-    console.log('[CheckoutView] File input cleared.');
-  }
-};
 
 const submitOrder = async () => {
   console.log('[CheckoutView] Submitting order...');
-  console.log('  Current userInfo:', userInfo.value);
-  console.log('  Token for Authorization:', userInfo.value?.token ? 'Exists' : 'MISSING/NULL');
-  console.log('  Shipping Address:', shippingAddress.value);
-  console.log('  Payment Method:', paymentMethod.value);
-  console.log('  Requires Proof:', requiresProof.value);
-  console.log('  Proof File Selected:', proofOfTransferFile.value ? proofOfTransferFile.value.name : 'NONE');
-  console.log('  Agreed to Terms:', agreedToTerms.value);
-  console.log('  Cart Items Count:', cartStore.items.length);
+  console.log('   Current userInfo:', userInfo.value);
+  console.log('   Token for Authorization:', userInfo.value?.token ? 'Exists' : 'MISSING/NULL');
+  console.log('   Shipping Address:', shippingAddress.value);
+  console.log('   Payment Method:', paymentMethod.value);
+  console.log('   Agreed to Terms:', agreedToTerms.value);
+  console.log('   Cart Items Count:', cartStore.items.length);
 
 
   if (!userInfo.value || !userInfo.value.token) {
@@ -263,12 +216,6 @@ const submitOrder = async () => {
     return;
   }
 
-  if (requiresProof.value && !proofOfTransferFile.value) {
-    error.value = 'Mohon upload bukti pembayaran.';
-    console.error('[CheckoutView] Submit aborted: Proof of payment required but not uploaded.');
-    return;
-  }
-
   if (!agreedToTerms.value) {
     error.value = 'Anda harus menyetujui syarat & ketentuan.';
     console.error('[CheckoutView] Submit aborted: Terms not agreed.');
@@ -286,46 +233,32 @@ const submitOrder = async () => {
   console.log('[CheckoutView] All frontend validations passed. Preparing for API call.');
 
   try {
-    const formData = new FormData();
+    const orderData = {
+      shippingAddress: shippingAddress.value,
+      paymentMethod: paymentMethod.value,
+      itemsPrice: itemsPrice.value,
+      shippingPrice: shippingPrice.value,
+      taxPrice: taxPrice.value,
+      totalPrice: totalPrice.value,
+      orderItems: cartStore.items.map(item => ({
+        product: item.product._id,
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.product.price,
+        image: item.product.image || '',
+      })),
+    };
 
-    formData.append('shippingAddress', JSON.stringify(shippingAddress.value));
-    formData.append('paymentMethod', paymentMethod.value);
-    formData.append('itemsPrice', itemsPrice.value);
-    formData.append('shippingPrice', shippingPrice.value);
-    formData.append('taxPrice', taxPrice.value);
-    formData.append('totalPrice', totalPrice.value);
+    console.log('[CheckoutView] Sending order data as JSON:', orderData);
 
-    formData.append('orderItems', JSON.stringify(cartStore.items.map(item => ({
-      product: item.product._id,
-      name: item.product.name,
-      quantity: item.quantity,
-      price: item.product.price,
-      image: item.product.image || '',
-    }))));
-
-    if (requiresProof.value && proofOfTransferFile.value) {
-      formData.append('proofOfTransfer', proofOfTransferFile.value);
-      console.log('[CheckoutView] Proof of transfer file appended to FormData.');
-    }
-    
-    // Log FormData contents (for debugging, can be verbose)
-    console.log('[CheckoutView] FormData contents:');
-    for (let pair of formData.entries()) {
-        if (pair[0] === 'proofOfTransfer' && typeof pair[1] === 'object') {
-            console.log(`  ${pair[0]}: File object (name: ${pair[1].name}, type: ${pair[1].type}, size: ${pair[1].size})`);
-        } else {
-            console.log(`  ${pair[0]}: ${pair[1]}`);
-        }
-    }
-
-
+    // PERBAIKAN URL DI SINI: Hapus '/api/v1' jika BE_PRE_URL sudah mengandungnya
+    // Berdasarkan error, BE_PRE_URL kemungkinan besar sudah 'localhost:9001/api/v1'
     console.log(`[CheckoutView] Sending POST request to: http://${BE_PRE_URL}/orders`);
     const { data } = await axios.post(
-      `http://${BE_PRE_URL}/orders`,
-      formData,
+      `http://${BE_PRE_URL}/orders`, // URL API yang benar (diasumsikan BE_PRE_URL sudah termasuk /api/v1)
+      orderData, // Kirim objek JSON langsung
       {
         headers: {
-          'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${userInfo.value.token}`
         }
       }
@@ -333,23 +266,20 @@ const submitOrder = async () => {
 
     console.log('[CheckoutView] Order successfully created:', data);
     cartStore.clearCart();
-    alert('Pesanan berhasil dibuat!');
+    alert('Pesanan berhasil dibuat! Silakan cek email Anda untuk instruksi pembayaran dan link unggah bukti transfer.');
     router.push({ name: 'orderConfirmation', params: { orderId: data._id } });
 
   } catch (err) {
     console.error('[CheckoutView] Gagal submit pesanan:', err);
     if (err.response) {
-      // Server responded with a status other than 2xx
       console.error('[CheckoutView] Server Response Error:', err.response.data);
       console.error('[CheckoutView] Status:', err.response.status);
       console.error('[CheckoutView] Headers:', err.response.headers);
       error.value = err.response.data.message || 'Terjadi kesalahan dari server.';
     } else if (err.request) {
-      // Request was made but no response was received
       console.error('[CheckoutView] Network Error (No response from server):', err.request);
       error.value = 'Tidak dapat terhubung ke server. Periksa koneksi Anda.';
     } else {
-      // Something happened in setting up the request that triggered an Error
       console.error('[CheckoutView] Axios Error (Request setup issue):', err.message);
       error.value = err.message || 'Terjadi kesalahan tidak terduga.';
     }

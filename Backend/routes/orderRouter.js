@@ -1,11 +1,16 @@
+// backend/routes/orderRouter.js
 import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
+// Hapus semua import multer, path, fileURLToPath, fs dari sini karena sudah ada di multerConfig.js
+// import multer from 'multer';
+// import path from 'path';
+// import { fileURLToPath } from 'url';
+// import fs from 'fs';
 
-// --- IMPORT MODEL ORDER DI SINI ---
-import Order from '../models/Order.js'; // PASTIKAN PATH KE MODEL ORDER.JS ANDA BENAR
+// --- IMPORT MULTER CONFIG DARI FILE TERPISAH ---
+import upload from '../middleware/multerConfig.js'; // PASTIKAN PATH INI BENAR!
+
+// --- IMPORT MODEL ORDER DI SINI (Jika diperlukan di router, tapi umumnya tidak) ---
+// import Order from '../models/Order.js'; // Umumnya model tidak diimpor langsung di router, tapi di controller
 
 const router = express.Router();
 import {
@@ -23,95 +28,36 @@ import {
   addAdminNotes,
   getOrdersByUserId,
   cancelOrderByCustomer,
+  getTopSellingProducts, // Pastikan ini diimpor jika digunakan
+  // --- IMPORT FUNGSI BARU UNTUK EMAIL INVOICE DAN UPLOAD BUKTI TRANSFER ---
+  verifyOrderToken,
+  uploadProofByToken,
 } from '../controllers/orderController.js';
 import { protectedMiddleware, adminMiddleware } from '../middleware/authMiddleware.js'; // Pastikan ini benar
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const uploadsDir = path.join(__dirname, '../public/uploads');
-
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-    console.log(`Created uploads directory at: ${uploadsDir}`);
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
-  },
-});
-const fileFilter = (req, file, cb) => {
-  const filetypes = /jpeg|jpg|png|gif|pdf/;
-  const mimetype = filetypes.test(file.mimetype);
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    cb(new Error('Hanya file gambar (JPEG, PNG, GIF) atau PDF yang diizinkan!'), false);
-  }
-};
-
-const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 },
-});
+// Hapus seluruh bagian ini karena sudah ditangani di multerConfig.js:
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+// const uploadsDir = path.join(__dirname, '../public/uploads');
+// if (!fs.existsSync(uploadsDir)) { /* ... */ }
+// const storage = multer.diskStorage({ /* ... */ });
+// const fileFilter = (req, file, cb) => { /* ... */ };
+// const upload = multer({ /* ... */ });
 
 
 // --- NEW ROUTE: GET TOP SELLING PRODUCTS ---
 // @desc    Get top selling products
 // @route   GET /api/orders/top-selling-products
 // @access  Private/Admin
-router.get('/top-selling-products', protectedMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const topProducts = await Order.aggregate([
-      // Tahap 1: Unwind orderItems - Memisahkan setiap item dalam array orderItems menjadi dokumen terpisah
-      { $unwind: '$orderItems' },
-
-      // Tahap 2: Filter berdasarkan status pesanan yang telah selesai
-      // Hanya menghitung produk dari pesanan yang sudah 'Delivered' atau 'Completed'
-      {
-        $match: {
-          orderStatus: { $in: ['Delivered', 'Completed'] }
-          // Anda juga bisa menambahkan filter tanggal di sini, contoh:
-          // createdAt: { $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 1)) } // Data 1 tahun terakhir
-        }
-      },
-
-      // Tahap 3: Group berdasarkan nama produk dan hitung total kuantitas/pendapatan
-      {
-        $group: {
-          _id: '$orderItems.name', // Kelompokkan berdasarkan nama produk dari orderItems
-          totalQuantitySold: { $sum: '$orderItems.quantity' }, // Menghitung total kuantitas terjual
-          totalRevenue: { $sum: { $multiply: ['$orderItems.quantity', '$orderItems.price'] } } // Menghitung total pendapatan
-        }
-      },
-
-      // Tahap 4: Urutkan hasil dari yang terlaris (berdasarkan kuantitas)
-      { $sort: { totalQuantitySold: -1 } }, // Urutkan dari terbesar ke terkecil
-
-      // Tahap 5: Batasi jumlah hasil (misalnya 7 produk teratas)
-      { $limit: 7 }
-    ]);
-
-    res.json(topProducts);
-  } catch (error) {
-    console.error(`Error fetching top selling products: ${error.message}`);
-    res.status(500).json({ message: 'Server Error', error: error.message });
-  }
-});
-// --- END NEW ROUTE ---
+router.get('/top-selling-products', protectedMiddleware, adminMiddleware, getTopSellingProducts); // Menggunakan fungsi dari controller
 
 
 // Create new order
+// PENTING: Hapus `upload.single('proofOfTransfer')` dari sini.
+// Endpoint `addOrderItems` tidak lagi menerima file upload.
+// Upload bukti transfer akan ditangani oleh rute `/api/orders/:id/upload-proof`
 router.route('/')
-  .post(protectedMiddleware, upload.single('proofOfTransfer'), addOrderItems)
+  .post(protectedMiddleware, addOrderItems) // <-- PERUBAHAN UTAMA DI SINI (multer dihapus)
   .get(protectedMiddleware, adminMiddleware, getAllOrders); // Get all orders (Admin only)
 
 // Get user's orders
@@ -146,7 +92,22 @@ router.route('/:id/deliver')
 
 // Admin notes route
 router.route('/:id/notes')
-  .put(protectedMiddleware, adminMiddleware, addAdminNotes); // Add admin notes
+  .put(protectedMiddleware, adminMiddleware, addAdminNotes);
+
+
+// --- RUTE BARU UNTUK EMAIL INVOICE DAN KONFIRMASI PEMBAYARAN ---
+// @desc    Verify order token and get order details (for public payment confirmation link)
+// @route   GET /api/orders/:id/verify-token?token=<token>
+// @access  Public (without JWT but with unique token)
+router.get('/:id/verify-token', verifyOrderToken);
+
+// @desc    Upload proof of transfer for an order using a unique token
+// @route   PUT /api/orders/:id/upload-proof
+// @access  Public (via unique token)
+// Gunakan middleware `upload.single('proofOfTransferImage')` di sini
+// sesuai dengan nama field yang diharapkan di `uploadProofByToken`
+router.put('/:id/upload-proof', upload.single('proofOfTransferImage'), uploadProofByToken);
+// --- AKHIR RUTE BARU ---
 
 
 // Get orders by user ID (using params)

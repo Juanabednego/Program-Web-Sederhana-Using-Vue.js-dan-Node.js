@@ -1,5 +1,3 @@
-
-
 import { createRouter, createWebHistory } from 'vue-router'
 import NProgress from 'nprogress' // Import NProgress
 import 'nprogress/nprogress.css' // Import CSS untuk styling NProgress
@@ -26,64 +24,57 @@ import ManagePurchasesPage from '../views/features/ManagePurchasesPage.vue';
 import PurchaseDetailPage from '../views/features/PurchaseDetailPage.vue';
 import Pemesanan from '../views/Pemesanan.vue'
 
+// --- START NEW IMPORTS FOR EMAIL INVOICE ---
+import ConfirmPaymentView from '../views/ConfirmPaymentView.vue'; // Ini adalah halaman yang akan menerima token
+import TokenInvalidView from '../views/TokenInvalidView.vue'; // Opsional: Halaman untuk token tidak valid
+// --- END NEW IMPORTS FOR EMAIL INVOICE ---
+
+
 const routes = [
   // Halaman Login yang akan dialihkan jika sudah login
+  // Logika pengalihan dipindahkan ke beforeEach global untuk konsistensi
   {
     path: '/',
     name: 'Login',
     component: Login,
-    beforeEnter: (to, from, next) => {
-      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
-      const role = localStorage.getItem('role')
-
-      // Jika sudah login, arahkan berdasarkan role
-      if (isLoggedIn) {
-        if (role === 'admin') {
-          next('/dashboard') // Admin diarahkan ke dashboard
-        } else if (role === 'customer') { 
-          next('/home') // Customer diarahkan ke home
-        }
-      } else {
-        next() // Jika belum login, tetap ke halaman login  
-      }
-    }
+    meta: { guestOnly: true } // Menandai rute ini hanya untuk tamu (belum login)
   },
 
-  { path: '/register', name: 'Register', component: Register },
+  { path: '/register', name: 'Register', component: Register, meta: { guestOnly: true } },
 
-  // Halaman untuk admin 
+  // Halaman untuk admin
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
-    meta: { requiresRole: 'admin' }
+    meta: { requiresAuth: true, roles: ['admin'] } // Menggunakan requiresAuth dan roles
   },
   {
     path: '/update/:id',
     name: 'UpdateUser',
     component: UpdateUser,
     props: true,
-    meta: { requiresRole: 'admin' }
+    meta: { requiresAuth: true, roles: ['admin'] }
   },
   {
     path: '/detail/:id',
     name: 'Detail',
     component: Detail,
     props: true,
-    meta: { requiresRole: 'admin' }
+    meta: { requiresAuth: true, roles: ['admin'] }
   },
   {
     path: '/kelola-pipa',
     name: 'KelolaPipa',
-    component: IndexKelolaPipa, // route untuk kelola pipa
-    meta: { requiresRole: 'admin' }
+    component: IndexKelolaPipa,
+    meta: { requiresAuth: true, roles: ['admin'] }
   },
   {
     path: '/update-pipa/:id',
     name: 'UpdatePipa',
-    component: UpdatePipa, // route untuk update pipa
+    component: UpdatePipa,
     props: true,
-    meta: { requiresRole: 'admin' }
+    meta: { requiresAuth: true, roles: ['admin'] }
   },
   {
     path: '/tambah-pipa',
@@ -91,21 +82,21 @@ const routes = [
     component: CreatePipa,
     meta: {
       requiresAuth: true,
-      role: 'admin'
+      roles: ['admin']
     },
   },
-    {
+  {
     path: '/purchases', // Rute baru untuk daftar pembelian
     name: 'ManagePurchases',
     component: ManagePurchasesPage,
-    meta: { requiresRole: 'admin' }
+    meta: { requiresAuth: true, roles: ['admin'] }
   },
   {
     path: '/purchases/:id', // Rute baru untuk detail pembelian
-    name: 'PurchaseDetail', 
+    name: 'PurchaseDetail',
     component: PurchaseDetailPage,
     props: true,
-    meta: { requiresRole: 'admin' }
+    meta: { requiresAuth: true, roles: ['admin'] }
   },
 
 
@@ -114,31 +105,31 @@ const routes = [
     path: '/customer-page',
     name: 'CustomerPage',
     component: CustomerPage,
-    meta: { requiresRole: 'customer' }
+    meta: { requiresAuth: true, roles: ['customer'] }
   },
   {
     path: '/home',
     name: 'Home',
     component: Home,
-    meta: { requiresRole: 'customer' }
+    meta: { requiresAuth: true, roles: ['customer'] }
   },
- {
+  {
     path: '/cart',
     name: 'cart',
     component: CartView,
-    meta: { requiresAuth: true, roles: ['customer'] } // Cart butuh customer login (sesuai request Anda)
+    meta: { requiresAuth: true, roles: ['customer'] }
   },
- {
+  {
     path: '/pemesanan',
     name: 'pemesanan',
     component: Pemesanan,
-    meta: { requiresAuth: true, roles: ['customer'] } // Cart butuh customer login (sesuai request Anda)
+    meta: { requiresAuth: true, roles: ['customer'] }
   },
   {
     path: '/checkout',
     name: 'checkout',
     component: CheckoutView,
-    meta: { requiresAuth: true, roles: ['customer'] } // Checkout butuh customer login
+    meta: { requiresAuth: true, roles: ['customer'] }
   },
   {
     path: '/order-confirmation/:orderId',
@@ -149,10 +140,31 @@ const routes = [
   },
 
   // Halaman umum
-  { path: '/about', name: 'About', component: About },
+  { path: '/about', name: 'About', component: About, meta: { requiresAuth: false } },
 
   // Forbidden page
-  { path: '/forbidden', name: 'Forbidden', component: Forbidden }
+  { path: '/forbidden', name: 'Forbidden', component: Forbidden, meta: { requiresAuth: false } },
+
+  // --- START NEW ROUTES FOR EMAIL INVOICE ---
+  {
+    path: '/confirm-payment', // Contoh: /confirm-payment?orderId=xxx&token=yyy
+    name: 'confirmPayment',
+    component: ConfirmPaymentView,
+    meta: { requiresAuth: false, isPublicWithToken: true }, // Rute publik, namun dengan validasi token
+    props: (route) => ({ orderId: route.query.orderId, token: route.query.token }) // Menerima query params sebagai props
+  },
+  {
+    path: '/token-invalid', // Halaman khusus jika token tidak valid/kadaluarsa
+    name: 'tokenInvalid',
+    component: TokenInvalidView, // Anda perlu membuat komponen Vue ini
+    meta: { requiresAuth: false, isPublic: true } // Tandai sebagai rute publik
+  },
+  // --- END NEW ROUTES FOR EMAIL INVOICE ---
+
+  {
+    path: '/:pathMatch(.*)*', // Catch all undefined routes
+    redirect: { name: 'Login' } // Redirect ke halaman Login jika rute tidak ditemukan
+  }
 ]
 
 const router = createRouter({
@@ -170,42 +182,39 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('jwt')
   const role = localStorage.getItem('role')
 
-  // Logika pengalihan untuk halaman login (rute '/')
-  if (to.path === '/') {
+  // --- START UPDATED NAVIGATION GUARD LOGIC ---
+
+  // 1. Handle guestOnly routes (login/register)
+  if (to.meta.guestOnly) {
     if (isLoggedIn) {
-      if (role === 'admin') {
-        NProgress.done() // Selesaikan progress bar jika langsung dialihkan
-        return next('/dashboard')
-      } else if (role === 'customer') {
-        NProgress.done() // Selesaikan progress bar jika langsung dialihkan
-        return next('/home')
-      }
-    } else {
-      return next() // Lanjutkan ke halaman login jika belum login
+      NProgress.done();
+      return role === 'admin' ? next({ name: 'Dashboard' }) : next({ name: 'Home' });
+    }
+    return next(); // Lanjutkan ke halaman login/register jika belum login
+  }
+
+  // 2. Handle public routes (About, Forbidden, ConfirmPayment, TokenInvalid)
+  if (to.meta.isPublic || to.meta.isPublicWithToken) {
+    return next(); // Lanjutkan tanpa cek otentikasi
+  }
+
+  // 3. Handle routes that require authentication
+  if (to.meta.requiresAuth) {
+    if (!isLoggedIn || !token) {
+      NProgress.done();
+      return next({ name: 'Login' }); // Redirect ke login jika tidak terautentikasi
+    }
+
+    // 4. Handle role-based access control
+    if (to.meta.roles && !to.meta.roles.includes(role)) {
+      NProgress.done();
+      return next({ name: 'Forbidden' }); // Redirect ke Forbidden page jika peran tidak sesuai
     }
   }
 
-  // Jika belum login dan mencoba mengakses halaman yang membutuhkan login
-  const protectedRoutes = ['/dashboard', '/update', '/detail', '/customer-page', '/home', '/kelola-pipa', '/update-pipa', '/tambah-pipa']
-  if (protectedRoutes.some(path => to.path.startsWith(path)) && (!isLoggedIn || !token)) {
-    NProgress.done() // Selesaikan progress bar jika dialihkan ke login
-    return next('/') // redirect ke login
-  }
+  // --- END UPDATED NAVIGATION GUARD LOGIC ---
 
-  // Role-based access control
-  if (to.meta.requiresRole) {
-    if (to.meta.requiresRole === 'admin' && role !== 'admin') {
-      NProgress.done() // Selesaikan progress bar jika dialihkan ke Forbidden
-      return next('/forbidden') // Redirect ke Forbidden page jika bukan admin
-    }
-
-    if (to.meta.requiresRole === 'customer' && role !== 'customer') {
-      NProgress.done() // Selesaikan progress bar jika dialihkan ke Forbidden
-      return next('/forbidden') // Redirect ke Forbidden page jika bukan customer
-    }
-  }
-
-  next() // Lanjutkan navigasi
+  next(); // Lanjutkan navigasi
 })
 
 router.afterEach(() => {

@@ -1,5 +1,5 @@
 // backend/models/Order.js
-import { AggregationCursor } from 'mongodb';
+import { AggregationCursor } from 'mongodb'; // Ini mungkin tidak perlu jika tidak digunakan langsung
 import mongoose from 'mongoose';
 
 const orderItemSchema = mongoose.Schema({
@@ -82,10 +82,20 @@ const orderSchema = mongoose.Schema(
     },
     proofOfTransferImage: {
       type: String,
-      required: function() {
-        return this.paymentMethod === 'Transfer Bank';
-      },
+      required: false, // <-- PERUBAHAN: Tidak lagi required saat order dibuat
     },
+    // --- START NEW FIELDS FOR EMAIL INVOICE ---
+    proofUploadToken: { // Token unik untuk link konfirmasi pembayaran
+      type: String,
+      unique: true, // Pastikan token unik
+      sparse: true, // Memungkinkan nilai null/undefined untuk dokumen yang tidak memiliki token
+      select: false, // Tidak akan disertakan dalam query default, harus dipilih secara eksplisit
+    },
+    proofUploadTokenExpires: { // Waktu kedaluwarsa token
+      type: Date,
+      select: false, // Tidak akan disertakan dalam query default, harus dipilih secara eksplisit
+    },
+    // --- END NEW FIELDS FOR EMAIL INVOICE ---
     adminNotes: {
       type: String,
     },
@@ -98,4 +108,3 @@ const orderSchema = mongoose.Schema(
 const Order = mongoose.model('Order', orderSchema);
 
 export default Order;
-
