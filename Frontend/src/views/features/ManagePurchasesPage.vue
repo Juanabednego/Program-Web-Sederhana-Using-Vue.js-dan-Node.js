@@ -2,15 +2,31 @@
   <div class="container mx-auto p-4">
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-3xl font-bold text-gray-800">Daftar Pembelian (Orders)</h2>
-      <button
-        @click="fetchPurchases"
-        :disabled="loading"
-        class="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-bold py-2 px-4 rounded transition duration-200 flex items-center space-x-2"
-      >
-        <div v-if="loading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-        <span v-if="loading">Memuat Ulang...</span>
-        <span v-else>Muat Ulang</span>
-      </button>
+      <div class="flex space-x-2">
+        <button
+          @click="fetchPurchases"
+          :disabled="loading"
+          class="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-bold py-2 px-4 rounded transition duration-200 flex items-center space-x-2"
+        >
+          <div v-if="loading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+          <span v-if="loading">Memuat Ulang...</span>
+          <span v-else>Muat Ulang</span>
+        </button>
+        <!-- Modified: Changed to a print icon button -->
+        <button
+          @click="showFinancialReportModal = true; fetchFinancialReport();"
+          class="bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white font-bold p-2 rounded transition duration-200 flex items-center justify-center"
+          :disabled="loadingFinancialReport"
+          title="Laporan Keuangan"
+        >
+          <div v-if="loadingFinancialReport" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-printer">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect width="12" height="8" x="6" y="14"></rect>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <div class="mb-4">
@@ -182,6 +198,91 @@
         </div>
       </div>
     </div>
+
+    <!-- Financial Report Modal -->
+    <div v-if="showFinancialReportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 no-print">
+      <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6 no-print">
+          <h3 class="text-2xl font-bold text-gray-800">Laporan Keuangan Pesanan Selesai</h3>
+          <button @click="showFinancialReportModal = false" class="text-gray-500 hover:text-gray-700 text-3xl font-bold">
+            &times;
+          </button>
+        </div>
+
+        <div v-if="loadingFinancialReport" class="text-center py-8">
+          <p class="text-lg text-gray-600">Memuat data laporan keuangan...</p>
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mt-4"></div>
+        </div>
+
+        <div v-else-if="financialReportError" class="text-center py-8 text-red-600">
+          <p class="text-xl font-semibold">{{ financialReportError }}</p>
+        </div>
+
+        <div v-else class="financial-report-content">
+          <div class="flex justify-end space-x-3 mb-4 no-print">
+            <button @click="printReport" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded transition duration-200">
+              Cetak Laporan
+            </button>
+            <button @click="downloadExcelReport" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+              Unduh Excel
+            </button>
+            <button @click="downloadPdfReport" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+              Unduh PDF
+            </button>
+          </div>
+
+          <!-- Summary Section -->
+          <h4 class="text-xl font-semibold mb-3">Ringkasan per Bulan</h4>
+          <div v-if="financialReportData.summary && financialReportData.summary.length > 0" class="mb-6">
+            <table class="min-w-full leading-normal border border-gray-300">
+              <thead>
+                <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                  <th class="py-3 px-6 text-left border-b border-gray-300">Bulan/Tahun</th>
+                  <th class="py-3 px-6 text-right border-b border-gray-300">Total Pendapatan</th>
+                  <th class="py-3 px-6 text-center border-b border-gray-300">Jumlah Pesanan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="summary in financialReportData.summary" :key="summary._id.year + '-' + summary._id.month" class="border-b border-gray-200 hover:bg-gray-100">
+                  <td class="py-3 px-6 text-left">{{ formatMonthYear(summary._id.year, summary._id.month) }}</td>
+                  <td class="py-3 px-6 text-right">{{ formatCurrency(summary.totalRevenue) }}</td>
+                  <td class="py-3 px-6 text-center">{{ summary.totalOrders }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p v-else class="text-gray-600">Tidak ada ringkasan laporan keuangan yang tersedia.</p>
+
+          <!-- Details Section -->
+          <h4 class="text-xl font-semibold mt-8 mb-3">Detail Pesanan Selesai</h4>
+          <div v-if="financialReportData.details && financialReportData.details.length > 0" class="overflow-x-auto">
+            <table class="min-w-full leading-normal border border-gray-300">
+              <thead>
+                <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                  <th class="py-3 px-6 text-left border-b border-gray-300">ID Pesanan</th>
+                  <th class="py-3 px-6 text-left border-b border-gray-300">Tanggal</th>
+                  <th class="py-3 px-6 text-left border-b border-gray-300">Pembeli</th>
+                  <th class="py-3 px-6 text-right border-b border-gray-300">Total Harga</th>
+                  <th class="py-3 px-6 text-left border-b border-gray-300">Metode Pembayaran</th>
+                  <th class="py-3 px-6 text-left border-b border-gray-300">Items</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="detail in financialReportData.details" :key="detail._id" class="border-b border-gray-200 hover:bg-gray-100">
+                  <td class="py-3 px-6 text-left whitespace-nowrap text-xs">{{ detail._id }}</td>
+                  <td class="py-3 px-6 text-left whitespace-nowrap">{{ formatDate(detail.createdAt) }}</td>
+                  <td class="py-3 px-6 text-left">{{ detail.user ? detail.user.nama : 'N/A' }}</td>
+                  <td class="py-3 px-6 text-right">{{ formatCurrency(detail.totalPrice) }}</td>
+                  <td class="py-3 px-6 text-left">{{ detail.paymentMethod }}</td>
+                  <td class="py-3 px-6 text-left text-xs">{{ detail.orderItems.map(item => `${item.name} (${item.quantity}x)`).join(', ') }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p v-else class="text-gray-600">Tidak ada detail pesanan selesai yang tersedia.</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -199,7 +300,13 @@ const actionLoading = ref(false);
 const filter = ref('');
 const activeActions = ref(null);
 const currentAction = ref('');
-const activeActionIndex = ref(null); // Track the ifndex or positioning
+const activeActionIndex = ref(null);
+
+// New states for Financial Report
+const showFinancialReportModal = ref(false);
+const financialReportData = ref({ summary: [], details: [] });
+const loadingFinancialReport = ref(false);
+const financialReportError = ref(null);
 
 // Helper function to get user info and token consistently
 function getUserInfoFromLocalStorage() {
@@ -263,9 +370,16 @@ const getDropdownPosition = (index) => {
 
 // Close dropdown when clicking outside
 const handleClickOutside = (event) => {
+  // Only close if the click is outside the active dropdown and not on the toggle button itself
   if (activeActions.value && !event.target.closest('.relative')) {
     activeActions.value = null;
     activeActionIndex.value = null;
+  }
+  // Also close the financial report modal if clicked outside its content
+  if (showFinancialReportModal.value && !event.target.closest('.max-w-4xl')) {
+    // This check is a bit tricky with event propagation for modals.
+    // A simpler approach for modals is to have an overlay that closes it.
+    // For now, relying on the close button is safer.
   }
 };
 
@@ -466,7 +580,6 @@ const handleApiError = (error, defaultMessage = 'Terjadi kesalahan') => {
 };
 
 const showSuccessMessage = (message) => {
-  // You can replace this with a more sophisticated notification system
   alert(message);
 };
 
@@ -479,7 +592,7 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 
-const formatDate = (dateString) => {
+const formatDate = (dateString, includeTime = true) => {
   if (!dateString) return 'N/A';
   const options = { 
     year: 'numeric', 
@@ -490,6 +603,12 @@ const formatDate = (dateString) => {
     timeZone: 'Asia/Jakarta'
   };
   return new Date(dateString).toLocaleDateString('id-ID', options);
+};
+
+// New function to format month and year for summary
+const formatMonthYear = (year, month) => {
+  const date = new Date(year, month - 1); // Month is 0-indexed
+  return date.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
 };
 
 const getStatusBadgeClass = (status) => {
@@ -513,6 +632,127 @@ const getStatusBadgeClass = (status) => {
       return 'bg-gray-200 text-gray-800 py-1 px-3 rounded-full text-xs font-semibold';
   }
 };
+
+// Financial Report Functions
+const fetchFinancialReport = async () => {
+  loadingFinancialReport.value = true;
+  financialReportError.value = null;
+  financialReportData.value = { summary: [], details: [] };
+
+  const userInfo = getUserInfoFromLocalStorage();
+  if (!userInfo || !userInfo.token) {
+    financialReportError.value = 'Anda harus login sebagai admin untuk melihat laporan keuangan.';
+    redirectToLogin();
+    loadingFinancialReport.value = false;
+    return;
+  }
+
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    };
+    const response = await axios.get(`http://${BE_PRE_URL}/orders/financial-report`, config);
+    financialReportData.value = response.data;
+    console.log('[ManagePurchases] Financial Report Data:', financialReportData.value);
+  } catch (error) {
+    console.error('Error fetching financial report:', error);
+    financialReportError.value = 'Gagal memuat laporan keuangan: ' + (error.response?.data?.message || error.message);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      redirectToLogin();
+    }
+  } finally {
+    loadingFinancialReport.value = false;
+  }
+};
+
+const printReport = () => {
+  window.print();
+};
+
+const downloadExcelReport = async () => {
+  loadingFinancialReport.value = true; // Use this to show a loading state for download
+  financialReportError.value = null;
+
+  const userInfo = getUserInfoFromLocalStorage();
+  if (!userInfo || !userInfo.token) {
+    financialReportError.value = 'Anda harus login sebagai admin untuk mengunduh laporan.';
+    redirectToLogin();
+    loadingFinancialReport.value = false;
+    return;
+  }
+
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+      responseType: 'blob', // Important for binary files
+    };
+    const response = await axios.get(`http://${BE_PRE_URL}/orders/financial-report/excel`, config);
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'Laporan_Keuangan_Completed.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    alert('Laporan Excel berhasil diunduh!');
+  } catch (error) {
+    console.error('Error downloading Excel report:', error);
+    financialReportError.value = 'Gagal mengunduh laporan Excel: ' + (error.response?.data?.message || error.message);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      redirectToLogin();
+    }
+  } finally {
+    loadingFinancialReport.value = false;
+  }
+};
+
+const downloadPdfReport = async () => {
+  loadingFinancialReport.value = true; // Use this to show a loading state for download
+  financialReportError.value = null;
+
+  const userInfo = getUserInfoFromLocalStorage();
+  if (!userInfo || !userInfo.token) {
+    financialReportError.value = 'Anda harus login sebagai admin untuk mengunduh laporan.';
+    redirectToLogin();
+    loadingFinancialReport.value = false;
+    return;
+  }
+
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+      responseType: 'blob', // Important for binary files
+    };
+    const response = await axios.get(`http://${BE_PRE_URL}/orders/financial-report/pdf`, config);
+
+    const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'Laporan_Keuangan_Completed.pdf');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    alert('Laporan PDF berhasil diunduh!');
+  } catch (error) {
+    console.error('Error downloading PDF report:', error);
+    financialReportError.value = 'Gagal mengunduh laporan PDF: ' + (error.response?.data?.message || error.message);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      redirectToLogin();
+    }
+  } finally {
+    loadingFinancialReport.value = false;
+  }
+};
+
 
 onMounted(() => {
   fetchPurchases();
@@ -547,5 +787,55 @@ onUnmounted(() => {
 /* Ensure table container doesn't clip dropdown */
 .overflow-x-auto {
   overflow-y: visible;
+}
+
+/* --- PRINT STYLES --- */
+@media print {
+  body * {
+    visibility: hidden; /* Hide everything by default */
+  }
+  .financial-report-content, .financial-report-content * {
+    visibility: visible; /* Make report content visible */
+  }
+  .financial-report-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: white;
+  }
+  .no-print {
+    display: none !important; /* Hide elements with no-print class */
+  }
+  /* Ensure tables are properly formatted for print */
+  .financial-report-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .financial-report-content th,
+  .financial-report-content td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+  .financial-report-content th {
+    background-color: #f2f2f2;
+  }
+  /* Remove modal background and shadow for print */
+  .fixed.inset-0.bg-black.bg-opacity-50 {
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+  .max-w-4xl {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: none !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
 }
 </style>

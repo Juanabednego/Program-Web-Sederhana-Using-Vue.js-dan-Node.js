@@ -1,16 +1,15 @@
-// backend/models/Order.js
-import { AggregationCursor } from 'mongodb'; // Ini mungkin tidak perlu jika tidak digunakan langsung
+import { AggregationCursor } from 'mongodb'; 
 import mongoose from 'mongoose';
 
 const orderItemSchema = mongoose.Schema({
   product: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: 'Pipe', // Mengacu ke model Pipe Anda
+    ref: 'Pipe',
   },
-  name: { type: String, required: true }, // Biasanya pipeName dari pipa
+  name: { type: String, required: true }, 
   quantity: { type: Number, required: true },
-  price: { type: Number, required: true }, // Ini akan diambil dari pricePerMeter * quantity di controller
+  price: { type: Number, required: true }, 
   image: { type: String, required: false },
 });
 
@@ -19,7 +18,7 @@ const orderSchema = mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'User', // Mengacu ke model User Anda (konsisten)
+      ref: 'User', 
     },
     orderItems: [orderItemSchema],
     shippingAddress: {
@@ -82,20 +81,18 @@ const orderSchema = mongoose.Schema(
     },
     proofOfTransferImage: {
       type: String,
-      required: false, // <-- PERUBAHAN: Tidak lagi required saat order dibuat
+      required: false, 
     },
-    // --- START NEW FIELDS FOR EMAIL INVOICE ---
-    proofUploadToken: { // Token unik untuk link konfirmasi pembayaran
+    proofUploadToken: { 
       type: String,
-      unique: true, // Pastikan token unik
-      sparse: true, // Memungkinkan nilai null/undefined untuk dokumen yang tidak memiliki token
-      select: false, // Tidak akan disertakan dalam query default, harus dipilih secara eksplisit
+      unique: true, 
+      sparse: true, 
+      select: false, 
     },
-    proofUploadTokenExpires: { // Waktu kedaluwarsa token
+    proofUploadTokenExpires: { 
       type: Date,
-      select: false, // Tidak akan disertakan dalam query default, harus dipilih secara eksplisit
+      select: false, 
     },
-    // --- END NEW FIELDS FOR EMAIL INVOICE ---
     adminNotes: {
       type: String,
     },

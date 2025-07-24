@@ -7,10 +7,10 @@ const cartItemSchema = mongoose.Schema({
     required: true,
     ref: 'User',
   },
-  product: { // Mengacu pada Pipe/Product ID
+  product: { 
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: 'Pipe', // Atau 'Product' jika nama modelnya itu
+    ref: 'Pipe',
   },
   quantity: {
     type: Number,

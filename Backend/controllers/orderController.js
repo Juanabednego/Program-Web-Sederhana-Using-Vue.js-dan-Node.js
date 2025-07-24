@@ -10,6 +10,7 @@ import fs from 'fs';
 import crypto from 'crypto'; // Import crypto untuk generate token
 import createTransporter from '../config/emailConfig.js'; // Import email transporter
 
+
 // Fungsi Pembantu untuk Mengirim Email Invoice
 const sendInvoiceEmail = async (order, user, proofUploadToken) => {
     const transporter = createTransporter();
@@ -65,9 +66,9 @@ const sendInvoiceEmail = async (order, user, proofUploadToken) => {
                 <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 15px;">Informasi Pembayaran Transfer Bank:</h3>
                 <p>Silakan lakukan transfer ke rekening berikut:</p>
                 <p style="background-color: #f9f9f9; border: 1px solid #eee; padding: 10px; border-radius: 5px;">
-                    <strong>Bank:</strong> [BRI]<br>
-                    <strong>Nomor Rekening:</strong> [382901027786533]<br>
-                    <strong>Atas Nama:</strong> [Juan A. Sihombing]<br>
+                    <strong>Bank:</strong> BRI<br>
+                    <strong>Nomor Rekening:</strong> 382901027786533<br>
+                    <strong>Atas Nama:</strong> Juan A. Sihombing<br>
                     <strong>Jumlah:</strong> <span style="font-size: 1.1em; font-weight: bold; color: #d9534f;">Rp ${new Intl.NumberFormat('id-ID').format(order.totalPrice)}</span>
                 </p>
 
@@ -107,7 +108,7 @@ const sendInvoiceEmail = async (order, user, proofUploadToken) => {
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private (hanya user terautentikasi)
-const addOrderItems = asyncHandler(async (req, res, next) => { // Removed 'export'
+const addOrderItems = asyncHandler(async (req, res, next) => {
   console.log('--- [addOrderItems] Request Received ---');
   console.log('Req Body:', req.body);
   console.log('User from Auth Middleware:', req.user ? req.user.nama : 'Not Authenticated');
@@ -227,7 +228,7 @@ const addOrderItems = asyncHandler(async (req, res, next) => { // Removed 'expor
 // @desc    Get order by ID
 // @route   GET /api/orders/:id
 // @access  Private
-const getOrderById = asyncHandler(async (req, res) => { // Removed 'export'
+const getOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id)
     .populate('user', 'nama email')
     .populate('orderItems.product', 'pipeName imageUrl');
@@ -248,7 +249,7 @@ const getOrderById = asyncHandler(async (req, res) => { // Removed 'export'
 // @desc    Get logged in user orders
 // @route   GET /api/orders/myorders
 // @access  Private
-const getMyOrders = asyncHandler(async (req, res) => { // Removed 'export'
+const getMyOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({ user: req.user._id })
     .sort({ createdAt: -1 })
     .populate('orderItems.product', 'pipeName imageUrl');
@@ -259,7 +260,7 @@ const getMyOrders = asyncHandler(async (req, res) => { // Removed 'export'
 // @desc    Get all orders (Admin Only)
 // @route   GET /api/orders
 // @access  Private/Admin
-const getAllOrders = asyncHandler(async (req, res) => { // Removed 'export'
+const getAllOrders = asyncHandler(async (req, res) => {
     const orders = await Order.find({})
         .populate('user', 'id nama email')
         .sort({ createdAt: -1 });
@@ -267,7 +268,7 @@ const getAllOrders = asyncHandler(async (req, res) => { // Removed 'export'
 });
 
 
-const processingOrder = asyncHandler(async (req, res) => { // Removed 'export'
+const processingOrder = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const order = await Order.findById(orderId);
 
@@ -288,7 +289,7 @@ const processingOrder = asyncHandler(async (req, res) => { // Removed 'export'
 // @desc    Update order status to Shipped
 // @route   PUT /api/v1/orders/:id/ship
 // @access  Private/Admin
-const shipOrder = asyncHandler(async (req, res) => { // Removed 'export'
+const shipOrder = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const order = await Order.findById(orderId);
 
@@ -309,7 +310,7 @@ const shipOrder = asyncHandler(async (req, res) => { // Removed 'export'
 // @desc    Update order status to Completed
 // @route   PUT /api/v1/orders/:id/complete
 // @access  Private/Admin
-const completeOrder = asyncHandler(async (req, res) => { // Removed 'export'
+const completeOrder = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const order = await Order.findById(orderId);
 
@@ -333,7 +334,7 @@ const completeOrder = asyncHandler(async (req, res) => { // Removed 'export'
 // @desc    Cancel order
 // @route   PUT /api/v1/orders/:id/cancel
 // @access  Private/Admin
-const cancelOrder = asyncHandler(async (req, res) => { // Removed 'export'
+const cancelOrder = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const order = await Order.findById(orderId);
 
@@ -359,7 +360,7 @@ const cancelOrder = asyncHandler(async (req, res) => { // Removed 'export'
 // @desc    Update order status (Generic)
 // @route   PUT /api/v1/orders/:id/status
 // @access  Private/Admin
-const updateOrderStatus = asyncHandler(async (req, res) => { // Removed 'export'
+const updateOrderStatus = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const { orderStatus } = req.body;
 
@@ -394,7 +395,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => { // Removed 'export'
 // @desc    Update order to paid
 // @route   PUT /api/v1/orders/:id/pay
 // @access  Private/Admin
-const updateOrderToPaid = asyncHandler(async (req, res) => { // Removed 'export'
+const updateOrderToPaid = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
   if (order) {
@@ -419,7 +420,7 @@ const updateOrderToPaid = asyncHandler(async (req, res) => { // Removed 'export'
 
 
 // @access  Private/Admin
-const updateOrderToDelivered = asyncHandler(async (req, res) => { // Removed 'export'
+const updateOrderToDelivered = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
   if (order) {
@@ -443,7 +444,7 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => { // Removed 'ex
 // @desc    Add admin notes to order
 // @route   PUT /api/v1/orders/:id/notes
 // @access  Private/Admin
-const addAdminNotes = asyncHandler(async (req, res) => { // Removed 'export'
+const addAdminNotes = asyncHandler(async (req, res) => {
   const { notes } = req.body;
   const order = await Order.findById(req.params.id);
 
@@ -464,7 +465,7 @@ const addAdminNotes = asyncHandler(async (req, res) => { // Removed 'export'
 // @desc    Get orders by user ID (using params)
 // @route   GET /api/v1/orders/user/:userId
 // @access  Private
-const getOrdersByUserId = asyncHandler(async (req, res) => { // Removed 'export'
+const getOrdersByUserId = asyncHandler(async (req, res) => {
   try {
     const userId = req.params.userId;
 
@@ -494,14 +495,14 @@ const getOrdersByUserId = asyncHandler(async (req, res) => { // Removed 'export'
   } catch (error) {
     console.error('[getOrdersByUserId] Error:', error);
     res.status(500);
-    throw new Error(error.message || 'Gagal mengambil data pesanan'); // Fixed new new Error
+    throw new Error(error.message || 'Gagal mengambil data pesanan');
   }
 });
 
 // @desc    Cancel order by customer
 // @route   PUT /api/v1/orders/:id/cancel-customer
 // @access  Private (Customer only can cancel their own order)
-const cancelOrderByCustomer = asyncHandler(async (req, res) => { // Removed 'export'
+const cancelOrderByCustomer = asyncHandler(async (req, res) => {
   try {
     const orderId = req.params.id;
     const userId = req.user._id;
@@ -601,6 +602,10 @@ const verifyOrderToken = asyncHandler(async (req, res) => {
   const order = await Order.findById(orderId).select('+proofUploadToken +proofUploadTokenExpires').populate('user', 'nama email');
 
   if (!order) {
+    if (order && order.proofUploadTokenExpires && new Date() > order.proofUploadTokenExpires) {
+        res.status(401);
+        throw new Error('Token sudah kedaluwarsa.');
+    }
     res.status(404);
     throw new Error('Pesanan tidak ditemukan.');
   }

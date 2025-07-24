@@ -1,4 +1,3 @@
-// backend/middleware/multerConfig.js
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -7,9 +6,8 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const uploadsDir = path.join(__dirname, '../public/uploads'); // Sesuaikan path ini jika Anda ingin menyimpannya di tempat lain
+const uploadsDir = path.join(__dirname, '../public/uploads'); 
 
-// Pastikan direktori uploads ada
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
     console.log(`Created uploads directory at: ${uploadsDir}`);
@@ -26,7 +24,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|gif/; // Hapus PDF karena bukti transfer umumnya gambar
+    const filetypes = /jpeg|jpg|png|gif/; 
     const mimetype = filetypes.test(file.mimetype);
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 
