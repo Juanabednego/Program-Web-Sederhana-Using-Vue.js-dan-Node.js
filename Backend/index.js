@@ -38,7 +38,7 @@ app.use(cookieParser())
 app.use(express.static('./public'))
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // <-- Gunakan variabel env atau default
+  origin: process.env.FRONTEND_URL || 'http://localhost:9000', // <-- Gunakan variabel env atau default
   credentials: true
 }))
 

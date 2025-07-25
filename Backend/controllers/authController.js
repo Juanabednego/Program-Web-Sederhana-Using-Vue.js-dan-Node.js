@@ -74,7 +74,7 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
     if (user) {
         // Menggunakan toObject untuk menghindari masalah sirkular
         res.status(200).json({
-            user: user.toObject()  // Pastikan ini adalah objek biasa, bukan MongoDB document
+            user: user.toObject()  
         })
     } else {
         res.status(404)
@@ -119,7 +119,7 @@ export const updateUser = asyncHandler(async (req, res) => {
 
 // --- Get All Users (dengan password) ---
 export const getAllUser = asyncHandler(async (req, res) => {
-    const users = await User.find(); // password ikut terbawa
+    const users = await User.find(); 
 
     res.status(200).json({
         message: "Berhasil mengambil semua data user (termasuk password)",
@@ -131,7 +131,7 @@ export const getAllUser = asyncHandler(async (req, res) => {
 export const getUserById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const user = await User.findById(id); // Mengambil semua field, termasuk password
+    const user = await User.findById(id); 
 
     if (!user) {
         res.status(404);
@@ -154,7 +154,7 @@ export const deleteUserById = asyncHandler(async (req, res) => {
         throw new Error("User tidak ditemukan");
     }
 
-    await user.deleteOne(); // atau: await User.findByIdAndDelete(id);
+    await user.deleteOne();
 
     res.status(200).json({
         message: "User berhasil dihapus",

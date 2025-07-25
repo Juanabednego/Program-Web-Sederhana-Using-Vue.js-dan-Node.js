@@ -4,7 +4,7 @@
       <h2 class="text-2xl font-bold mb-6 text-gray-800">Update Pipa</h2>
 
       <div v-if="loading" class="text-center mb-4">
-        <span class="loader">Loading data pipa...</span>
+        <span class="loader">Loading data pipa..</span>
       </div>
 
       <div v-if="error" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -274,12 +274,11 @@ const pipeData = ref({
   imageUrl: ''
 })
 
-// Handle file change untuk preview gambar
 const handleFileChange = (event) => {
-  error.value = null; // Reset error saat file berubah
+  error.value = null; 
   const file = event.target.files[0]
   if (file) {
-    // Validasi file
+   
     if (!file.type.startsWith('image/')) {
       error.value = 'File harus berupa gambar.'
       selectedFile.value = null;
@@ -296,7 +295,6 @@ const handleFileChange = (event) => {
 
     selectedFile.value = file
 
-    // Create preview
     const reader = new FileReader()
     reader.onload = (e) => {
       imagePreview.value = e.target.result
@@ -308,7 +306,6 @@ const handleFileChange = (event) => {
   }
 }
 
-// Upload gambar ke Cloudinary
 const uploadImage = async () => {
   if (!selectedFile.value) return null
 
@@ -316,7 +313,6 @@ const uploadImage = async () => {
     const uploadFormData = new FormData()
     uploadFormData.append('image', selectedFile.value)
 
-    // Tambahkan token jika ada
     const token = localStorage.getItem('jwt')
     const config = {
       headers: {
@@ -324,7 +320,6 @@ const uploadImage = async () => {
       }
     }
 
-    // Tambahkan Authorization header jika token ada
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -365,10 +360,7 @@ const fetchPipe = async () => {
 
 // --- Metode Baru untuk Konfirmasi Update ---
 const promptForUpdate = () => {
-  // Hanya tampilkan modal jika form valid (opsional, tapi disarankan)
-  // Anda bisa menambahkan validasi form di sini sebelum menampilkan modal
-  // Misalnya, jika form HTML Anda sudah memiliki 'required',
-  // browser akan mencegah submit jika ada field kosong.
+  
   showConfirmModalFlag.value = true; // Tampilkan modal
 }
 

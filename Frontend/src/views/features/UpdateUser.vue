@@ -2,12 +2,10 @@
   <div class="max-w-md mx-auto p-6 border mt-10 shadow-md rounded-md">
     <h2 class="text-xl font-semibold text-center mb-6">Update User</h2>
 
-    <!-- Loading saat ambil data user -->
     <div v-if="isLoading" class="text-center py-8 text-blue-600 font-semibold">
       Memuat data pengguna...
     </div>
 
-    <!-- Form tampil jika data sudah dimuat -->
     <form v-else @submit.prevent="handleUpdate">
       <div class="mb-4">
         <label class="block mb-1 font-medium text-sm">Username</label>
@@ -29,7 +27,6 @@
         <input v-model="form.password" type="text" class="w-full border rounded px-3 py-2" required />
       </div>
 
-      <!-- Loading saat proses update -->
       <div v-if="isUpdating" class="text-center text-blue-500 font-medium my-4">
         Menyimpan perubahan...
       </div>
@@ -59,8 +56,8 @@ import BE_PRE_URL from '../../url/index.js'
 const route = useRoute()
 const router = useRouter()
 
-const isLoading = ref(true)      // Loading saat ambil data user
-const isUpdating = ref(false)    // Loading saat update
+const isLoading = ref(true)      
+const isUpdating = ref(false)    
 
 const form = reactive({
   username: '',
@@ -71,7 +68,6 @@ const form = reactive({
 
 const userId = ref('')
 
-// Ambil data user berdasarkan ID
 const fetchUserById = async (id) => {
   isLoading.value = true
   try {
@@ -86,8 +82,7 @@ const fetchUserById = async (id) => {
     form.username = user.username
     form.email = user.email
     form.nama = user.nama
-    form.password = user.password // Tampilkan password (hash)
-
+    form.password = user.password 
     userId.value = user._id
   } catch (err) {
     alert('Gagal mengambil data user')
@@ -98,7 +93,6 @@ const fetchUserById = async (id) => {
   }
 }
 
-// Fungsi untuk mengupdate data
 const handleUpdate = async () => {
   isUpdating.value = true
   try {
@@ -118,7 +112,6 @@ const handleUpdate = async () => {
       }
     })
 
-    // alert('User berhasil diupdate!')
     router.push('/dashboard')
   } catch (err) {
     alert('Gagal update user')
@@ -128,12 +121,10 @@ const handleUpdate = async () => {
   }
 }
 
-// Kembali ke halaman sebelumnya
 const goBack = () => {
   router.back()
 }
 
-// Saat halaman dibuka, ambil data user
 onMounted(() => {
   const id = route.params.id
   fetchUserById(id)

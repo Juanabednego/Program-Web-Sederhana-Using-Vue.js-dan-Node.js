@@ -88,7 +88,7 @@ const orderSchema = mongoose.Schema(
       unique: true, 
       sparse: true, 
       select: false, 
-    },
+    },      
     proofUploadTokenExpires: { 
       type: Date,
       select: false, 

@@ -22,5 +22,5 @@ export default {
 </script>
 
 <style scoped>
-/* Tambahkan gaya CSS kustom di sini */
+
 </style>

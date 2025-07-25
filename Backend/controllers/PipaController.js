@@ -1,13 +1,11 @@
 import Pipe from "../models/pipaModel.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 
-// Get All Pipa
 export const getAllPipa = asyncHandler(async (req, res) => {
     const pipes = await Pipe.find();
     res.status(200).json(pipes);
 });
  
-// Get Pipa by ID
 export const getPipaById = asyncHandler(async (req, res) => {
     const pipe = await Pipe.findById(req.params.id);
     if (!pipe) {
@@ -17,7 +15,6 @@ export const getPipaById = asyncHandler(async (req, res) => {
     res.status(200).json(pipe);
 });
 
-// Create Pipa
 export const createPipa = asyncHandler(async (req, res) => {
     const { 
         pipeName, 
@@ -32,17 +29,15 @@ export const createPipa = asyncHandler(async (req, res) => {
         stock, 
         productionDate, 
         description,
-        imageUrl // Tambahkan imageUrl dari request body
+        imageUrl 
     } = req.body;
 
-    // Validasi apakah pipa sudah ada dengan nama yang sama
     const existingPipe = await Pipe.findOne({ pipeName });
     if (existingPipe) {
         res.status(400);
         throw new Error("Pipa dengan nama ini sudah ada");
     }
 
-    // Buat objek pipa baru
     const pipeData = {
         pipeName,
         pipeType,
@@ -58,7 +53,6 @@ export const createPipa = asyncHandler(async (req, res) => {
         description
     };
 
-    // Tambahkan imageUrl jika ada
     if (imageUrl) {
         pipeData.imageUrl = imageUrl;
     }
@@ -77,7 +71,6 @@ export const createPipa = asyncHandler(async (req, res) => {
     }
 });
     
-// Update Pipa
 export const updatePipa = asyncHandler(async (req, res) => {
     const pipe = await Pipe.findById(req.params.id);
     if (!pipe) {
@@ -99,10 +92,9 @@ export const updatePipa = asyncHandler(async (req, res) => {
         productionDate, 
         description, 
         status,
-        imageUrl // Tambahkan imageUrl untuk update
+        imageUrl 
     } = req.body;
 
-    // Validasi nama pipa jika diubah
     if (pipeName && pipeName !== pipe.pipeName) {
         const existingPipe = await Pipe.findOne({ pipeName });
         if (existingPipe) {
@@ -111,7 +103,6 @@ export const updatePipa = asyncHandler(async (req, res) => {
         }
     }
 
-    // Update fields
     pipe.pipeName = pipeName || pipe.pipeName;
     pipe.pipeType = pipeType || pipe.pipeType;
     pipe.diameter = diameter || pipe.diameter;
@@ -126,7 +117,6 @@ export const updatePipa = asyncHandler(async (req, res) => {
     pipe.description = description || pipe.description;
     pipe.status = status || pipe.status;
     
-    // Update imageUrl jika ada
     if (imageUrl !== undefined) {
         pipe.imageUrl = imageUrl;
     } 
@@ -143,7 +133,6 @@ export const updatePipa = asyncHandler(async (req, res) => {
     }
 }); 
 
-// Delete Pipa
 export const deletePipa = asyncHandler(async (req, res) => {
     const pipe = await Pipe.findById(req.params.id);
     if (!pipe) {

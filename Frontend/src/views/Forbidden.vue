@@ -18,14 +18,11 @@ const router = useRouter()
     window.location.replace('/'); 
     }
 
-// Fungsi untuk kembali ke halaman login dan me-refresh
 const goBack = () => {
 
-
-  // Mengarah ke halaman login dan mereload halaman
-  localStorage.removeItem('isLoggedIn'); // Menghapus status login
-  localStorage.removeItem('role'); // Menghapus peran
-  localStorage.removeItem('jwt'); // Menghapus token JWT
+  localStorage.removeItem('isLoggedIn'); 
+  localStorage.removeItem('role');
+  localStorage.removeItem('jwt'); 
 
   // Redirect ke halaman login dan reload
   window.location.replace('/'); 

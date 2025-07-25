@@ -102,8 +102,6 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import BE_PRE_URL from '../../url/index.js';
 import TopSellingProductsChart from '../../components/TopSellingProductsChart.vue';
-// import OrdersPerMonthChart from '../../components/OrdersPerMonthChart.vue'; // Akan dibuat
-// import OrdersByStatusChart from '../../components/OrdersByStatusChart.vue'; // Akan dibuat
 
 const router = useRouter();
 
@@ -150,20 +148,18 @@ const fetchSummaryStats = async () => {
   };
 
   try {
-    // === PERBAIKAN DI SINI: HANYA MEMANGGIL 'PIPA' UNTUK PRODUK ===
     const [ordersRes, pipaRes, usersRes] = await Promise.all([
-      axios.get(`http://${BE_PRE_URL}/orders`, config), // URL: /api/v1/orders
-      axios.get(`http://${BE_PRE_URL}/pipa`, config), // URL: /api/v1/pipa (Ini satu-satunya sumber produk)
-      axios.get(`http://${BE_PRE_URL}/auth`, config), // URL: /api/v1/auth
+      axios.get(`http://${BE_PRE_URL}/orders`, config),
+      axios.get(`http://${BE_PRE_URL}/pipa`, config), 
+      axios.get(`http://${BE_PRE_URL}/auth`, config), 
     ]);
 
     totalOrders.value = ordersRes.data.length;
     totalRevenue.value = ordersRes.data.reduce((sum, order) => sum + order.totalPrice, 0);
 
-    // Menghitung total produk hanya dari sumber 'pipa'
     totalProducts.value = pipaRes.data ? pipaRes.data.length : 0;
 
-    totalUsers.value = usersRes.data.data ? usersRes.data.data.length : 0; // Pastikan usersRes.data.data ada
+    totalUsers.value = usersRes.data.data ? usersRes.data.data.length : 0; 
 
   } catch (error) {
     console.error('Gagal mengambil data statistik:', error);

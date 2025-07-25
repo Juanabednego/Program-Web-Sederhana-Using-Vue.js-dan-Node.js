@@ -5,7 +5,7 @@ import streamifier from "streamifier"
 import Lapangan from "../models/lapanganModel.js";
 
 export const CreateLapangan = asyncHandler(async(req,res) => {
-    // res.send("Create Lapangan")
+    
     const newLapangan = await Lapangan.create(req.body)
 
     res.status(201).json({
@@ -16,8 +16,7 @@ export const CreateLapangan = asyncHandler(async(req,res) => {
 
 
 export const AllLapangan = asyncHandler(async(req,res) => {
-    // res.send("All Lapangan")
-    // const data = await Product.find()
+    
 
     const queryObj = {...req.query}
 
@@ -25,7 +24,7 @@ export const AllLapangan = asyncHandler(async(req,res) => {
 
     excludeField.forEach(element => delete queryObj[element])
 
-    // // console.log(queryObj)
+    
 
     let query
 
@@ -37,9 +36,7 @@ export const AllLapangan = asyncHandler(async(req,res) => {
         query = Lapangan.find(queryObj)
     }
     
-    // let query = Lapangan.find(queryObj)
-
-    // // Pagination
+    
     const page = req.query.page * 1 || 1
     const limitData = req.query.limit || 30
     const skipData = (page - 1) * limitData
@@ -82,7 +79,7 @@ export const detailLapangan = asyncHandler(async (req, res) => {
 
 
 export const updateLapangan = asyncHandler(async (req, res) => {
-    // res.send("Update Lapangan")
+
     const paramId = req.params.id
     const updateLapangan = await Lapangan.findByIdAndUpdate(paramId,
         req.body,
@@ -100,7 +97,7 @@ export const updateLapangan = asyncHandler(async (req, res) => {
 
 
 export const deleteProduct = asyncHandler(async(req,res) => {
-    // res.send("Delete Product")
+   
     const paramId = req.params.id
     const deleteProduct = await Product.findByIdAndDelete(paramId)
 
@@ -135,19 +132,5 @@ export const fileUpload = asyncHandler(async(req, res) => {
 
     streamifier.createReadStream(req.file.buffer).pipe(stream)
 
-    // res.send('File upload product')
-    // const file = req.file
-    // if(!file){
-    //     res.status(400)
-    //     throw new Error("Tidak ada file yang diinput")
-    // }
-
-    // const imageFileName = file.filename
-    // const pathImageFile = `uploads/${imageFileName}`
-
-    // res.status(200).json({
-    //     message : "Image berhasil diupload",
-    //     image : pathImageFile
-    // })
 
 })

@@ -1,4 +1,3 @@
-// backend/controllers/orderController.js
 import mongoose from 'mongoose';
 import Order from '../models/Order.js';
 import Pipe from '../models/pipaModel.js';
@@ -7,14 +6,12 @@ import User from '../models/userModel.js';
 import asyncHandler from 'express-async-handler';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
-import crypto from 'crypto'; // Import crypto untuk generate token
-import createTransporter from '../config/emailConfig.js'; // Import email transporter
+import crypto from 'crypto'; 
+import createTransporter from '../config/emailConfig.js'; 
 
-
-// Fungsi Pembantu untuk Mengirim Email Invoice
 const sendInvoiceEmail = async (order, user, proofUploadToken) => {
     const transporter = createTransporter();
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'; // Fallback URL
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:9000';
     const uploadLink = `${frontendUrl}/confirm-payment?orderId=${order._id}&token=${proofUploadToken}`;
 
     let orderItemsHtml = '';
@@ -81,18 +78,18 @@ const sendInvoiceEmail = async (order, user, proofUploadToken) => {
                 <p style="font-size: 0.9em; color: #777; text-align: center; margin-top: 10px;">Link ini berlaku selama 1 jam. Jika sudah kedaluwarsa, silakan hubungi kami.</p>
 
                 <p style="margin-top: 30px;">Jika Anda memiliki pertanyaan, jangan ragu untuk membalas email ini.</p>
-                <p>Hormat kami,<br>Tim ${process.env.APP_NAME || 'Test Program'}</p>
+                <p>Hormat kami,<br>Tim ${process.env.APP_NAME || 'Rucika'}</p>
             </div>
             <div style="background-color: #f7f7f7; padding: 15px; text-align: center; font-size: 0.8em; color: #777; border-top: 1px solid #eee;">
-                <p>&copy; ${new Date().getFullYear()} ${process.env.APP_NAME || 'Test Program'}. Hak Cipta Dilindungi.</p>
+                <p>&copy; ${new Date().getFullYear()} ${process.env.APP_NAME || 'Rucika'}. Hak Cipta Dilindungi.</p>
             </div>
         </div>
     `;
 
     const mailOptions = {
-        from: `"${process.env.APP_NAME || 'Test Program'}" <${process.env.SENDER_EMAIL}>`,
+        from: `"${process.env.APP_NAME || 'Rucika'}" <${process.env.SENDER_EMAIL}>`,
         to: user.email,
-        subject: `Invoice Pesanan #${order._id} dari ${process.env.APP_NAME || 'Test Program'}`,
+        subject: `Invoice Pesanan #${order._id} dari ${process.env.APP_NAME || 'Rucika'}`,
         html: emailHtml,
     };
 
@@ -101,13 +98,10 @@ const sendInvoiceEmail = async (order, user, proofUploadToken) => {
         console.log(`Invoice email sent to ${user.email} for order ${order._id}`);
     } catch (error) {
         console.error(`Failed to send invoice email to ${user.email}:`, error);
-        // Penting: Jangan throw error di sini, agar pembuatan order tetap sukses meskipun email gagal
+      
     }
 };
 
-// @desc    Create new order
-// @route   POST /api/orders
-// @access  Private (hanya user terautentikasi)
 const addOrderItems = asyncHandler(async (req, res, next) => {
   console.log('--- [addOrderItems] Request Received ---');
   console.log('Req Body:', req.body);
@@ -225,9 +219,6 @@ const addOrderItems = asyncHandler(async (req, res, next) => {
 });
 
 
-// @desc    Get order by ID
-// @route   GET /api/orders/:id
-// @access  Private
 const getOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id)
     .populate('user', 'nama email')
@@ -245,10 +236,6 @@ const getOrderById = asyncHandler(async (req, res) => {
   }
 });
 
-
-// @desc    Get logged in user orders
-// @route   GET /api/orders/myorders
-// @access  Private
 const getMyOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({ user: req.user._id })
     .sort({ createdAt: -1 })
@@ -256,17 +243,12 @@ const getMyOrders = asyncHandler(async (req, res) => {
   res.json(orders);
 });
 
-
-// @desc    Get all orders (Admin Only)
-// @route   GET /api/orders
-// @access  Private/Admin
 const getAllOrders = asyncHandler(async (req, res) => {
     const orders = await Order.find({})
         .populate('user', 'id nama email')
         .sort({ createdAt: -1 });
     res.json(orders);
 });
-
 
 const processingOrder = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
@@ -286,9 +268,6 @@ const processingOrder = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Update order status to Shipped
-// @route   PUT /api/v1/orders/:id/ship
-// @access  Private/Admin
 const shipOrder = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const order = await Order.findById(orderId);
@@ -307,9 +286,6 @@ const shipOrder = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Update order status to Completed
-// @route   PUT /api/v1/orders/:id/complete
-// @access  Private/Admin
 const completeOrder = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const order = await Order.findById(orderId);
@@ -331,9 +307,6 @@ const completeOrder = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Cancel order
-// @route   PUT /api/v1/orders/:id/cancel
-// @access  Private/Admin
 const cancelOrder = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const order = await Order.findById(orderId);
@@ -357,9 +330,6 @@ const cancelOrder = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Update order status (Generic)
-// @route   PUT /api/v1/orders/:id/status
-// @access  Private/Admin
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const { orderStatus } = req.body;
@@ -392,9 +362,6 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Update order to paid
-// @route   PUT /api/v1/orders/:id/pay
-// @access  Private/Admin
 const updateOrderToPaid = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
@@ -418,8 +385,6 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
   }
 });
 
-
-// @access  Private/Admin
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
@@ -441,9 +406,6 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Add admin notes to order
-// @route   PUT /api/v1/orders/:id/notes
-// @access  Private/Admin
 const addAdminNotes = asyncHandler(async (req, res) => {
   const { notes } = req.body;
   const order = await Order.findById(req.params.id);
@@ -462,9 +424,6 @@ const addAdminNotes = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get orders by user ID (using params)
-// @route   GET /api/v1/orders/user/:userId
-// @access  Private
 const getOrdersByUserId = asyncHandler(async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -499,9 +458,6 @@ const getOrdersByUserId = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Cancel order by customer
-// @route   PUT /api/v1/orders/:id/cancel-customer
-// @access  Private (Customer only can cancel their own order)
 const cancelOrderByCustomer = asyncHandler(async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -546,9 +502,6 @@ const cancelOrderByCustomer = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get top selling products
-// @route   GET /api/orders/top-selling-products
-// @access  Private/Admin
 const getTopSellingProducts = asyncHandler(async (req, res) => {
   try {
     const topProducts = await Order.aggregate([
@@ -587,9 +540,7 @@ const getTopSellingProducts = asyncHandler(async (req, res) => {
 
 // --- FUNGSI BARU UNTUK EMAIL INVOICE DAN UPLOAD BUKTI TRANSFER ---
 
-// @desc    Verify order token and get order details (for public payment confirmation link)
-// @route   GET /api/orders/:id/verify-token?token=<token>
-// @access  Public (without JWT but with unique token)
+
 const verifyOrderToken = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const { token } = req.query;
@@ -634,9 +585,7 @@ const verifyOrderToken = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Upload proof of transfer for an order using a unique token
-// @route   PUT /api/orders/:id/upload-proof
-// @access  Public (via unique token)
+
 const uploadProofByToken = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   const { token } = req.body;
@@ -707,9 +656,7 @@ const uploadProofByToken = asyncHandler(async (req, res) => {
     order: updatedOrder,
   });
 });
-// --- AKHIR FUNGSI BARU ---
 
-// Export semua fungsi di sini
 export {
   addOrderItems,
   getOrderById,

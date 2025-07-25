@@ -5,7 +5,6 @@
 
       <div v-if="isLoading" class="text-center py-8">
         <p class="text-lg text-gray-600">Memverifikasi tautan pembayaran Anda...</p>
-        <!-- Anda bisa menambahkan spinner di sini -->
         <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mt-4" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -75,7 +74,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
-import BE_PRE_URL from '../url/index.js'; // Pastikan path ini benar
+import BE_PRE_URL from '../url/index.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -101,7 +100,7 @@ onMounted(() => {
     console.error('[ConfirmPaymentView] Order ID atau Token tidak ditemukan di URL.');
     error.value = 'Tautan konfirmasi tidak lengkap. Order ID atau Token tidak ditemukan.';
     isLoading.value = false;
-    router.push({ name: 'tokenInvalid' }); // Arahkan ke halaman error token
+    router.push({ name: 'tokenInvalid' });
     return;
   }
   fetchOrderDetails();
@@ -126,7 +125,7 @@ const fetchOrderDetails = async () => {
     } else {
       error.value = 'Terjadi kesalahan saat memverifikasi tautan.';
     }
-    // Arahkan ke halaman token tidak valid jika ada masalah otentikasi/validasi
+ 
     if (err.response && (err.response.status === 400 || err.response.status === 401 || err.response.status === 403 || err.response.status === 404)) {
       console.log('[ConfirmPaymentView] Redirecting to tokenInvalid due to backend error status.');
       router.push({ name: 'tokenInvalid' });
@@ -143,7 +142,7 @@ const handleFileUpload = (event) => {
   uploadSuccess.value = null;
 
   const allowed = ['image/jpeg', 'image/png', 'image/gif'];
-  const maxFileSize = 5 * 1024 * 1024; // 5MB
+  const maxFileSize = 5 * 1024 * 1024;
 
   if (file) {
     if (!allowed.includes(file.type)) {
@@ -168,7 +167,7 @@ const submitProofOfTransfer = async () => {
 
   const formData = new FormData();
   formData.append('proofOfTransferImage', selectedFile.value);
-  formData.append('token', token); // Pastikan token juga dikirim di FormData
+  formData.append('token', token); 
 
   try {
     console.log(`[ConfirmPaymentView] Submitting proof of transfer for orderId: ${orderId}`);
@@ -179,10 +178,10 @@ const submitProofOfTransfer = async () => {
       },
     });
     uploadSuccess.value = data.message || 'Bukti transfer berhasil diunggah! Pesanan Anda akan segera diproses.';
-    order.value.orderStatus = data.order.orderStatus; // Update status pesanan di frontend
-    order.value.proofOfTransferImage = data.order.proofOfTransferImage; // Update URL gambar jika ada
+    order.value.orderStatus = data.order.orderStatus;
+    order.value.proofOfTransferImage = data.order.proofOfTransferImage; 
     console.log('[ConfirmPaymentView] Proof of transfer uploaded successfully:', data);
-    // Opsi: redirect ke halaman lain atau tampilkan pesan sukses
+  
   } catch (err) {
     console.error('[ConfirmPaymentView] Gagal mengunggah bukti transfer:', err);
     if (err.response && err.response.data && err.response.data.message) {
@@ -224,5 +223,5 @@ const getStatusClass = (status) => {
 </script>
 
 <style scoped>
-/* Tambahkan gaya CSS kustom di sini */
+
 </style>

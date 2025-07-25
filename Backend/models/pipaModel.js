@@ -10,13 +10,13 @@ const pipeSchema = new Schema({
     pipeType: {
         type: String,
         required: [true, "Jenis pipa harus diisi"],
-        enum: ['PVC', 'HDPE', 'PPR', 'Besi', 'Lainnya'], // bisa ditambahkan sesuai jenis pipa lainnya
+        enum: ['PVC', 'HDPE', 'PPR', 'Besi', 'Lainnya'], 
     },
     diameter: {
         type: Number,
         required: [true, "Diameter pipa harus diisi"],
         min: [1, "Diameter minimal 1mm"],
-        max: [1000, "Diameter maksimal 1000mm"], // bisa disesuaikan
+        max: [1000, "Diameter maksimal 1000mm"], 
     },
     length: {
         type: Number,
@@ -31,7 +31,7 @@ const pipeSchema = new Schema({
     pipeClass: {
         type: String,
         required: [true, "Kelas pipa harus diisi"],
-        enum: ['Class A', 'Class B', 'Class C'], // kelas pipa sesuai dengan standar
+        enum: ['Class A', 'Class B', 'Class C'], 
     },
     material: {
         type: String,
@@ -66,11 +66,11 @@ const pipeSchema = new Schema({
     },
     imageUrl: {
         type: String,
-        default: "", // URL gambar dari Cloudinary
+        default: "", 
     }
 });
 
-// Membuat model Pipa berdasarkan schema
+
 const Pipe = mongoose.model("Pipe", pipeSchema);
 
 export default Pipe;

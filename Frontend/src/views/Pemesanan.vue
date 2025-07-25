@@ -92,11 +92,7 @@
               <div>
                 <h5 class="font-medium text-gray-900 mb-2">Metode Pembayaran</h5>
                 <p class="text-sm text-gray-600">{{ order.paymentMethod }}</p>
-                <!-- <div class="mt-2">
-                  <span :class="order.isPaid ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium">
-                    {{ order.isPaid ? '✓ Sudah Dibayar' : '✗ Belum Dibayar' }}
-                  </span>
-                </div> -->
+              
               </div>
             </div>
           </div>
@@ -195,8 +191,7 @@ const fetchOrders = async () => {
         localStorage.removeItem('user_id')
         localStorage.removeItem('jwt')
         localStorage.removeItem('token')
-        // Redirect to login if using router
-        // router.push({ name: 'Login' })
+        
       }
     } else if (err.request) {
       console.error('[Pemesanan] Network Error:', err.request)

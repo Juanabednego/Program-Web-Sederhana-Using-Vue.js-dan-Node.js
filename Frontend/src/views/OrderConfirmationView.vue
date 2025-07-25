@@ -155,7 +155,6 @@ import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import BE_PRE_URL from '../url';
 
-// Import BE_PRE_URL
 
 const route = useRoute();
 const router = useRouter();
@@ -166,7 +165,6 @@ const loading = ref(true);
 const error = ref(null);
 const cancellingOrder = ref(false);
 
-// Helper function untuk mendapatkan token dari localStorage
 const getTokenFromLocalStorage = () => {
   try {
     const token = localStorage.getItem('jwt') || localStorage.getItem('token');
@@ -255,7 +253,6 @@ const fetchOrder = async () => {
   }
 };
 
-// Cancel order function
 const cancelOrder = async () => {
   console.log(`[OrderConfirmation] Attempting to cancel order: ${orderId}`);
   
@@ -278,7 +275,6 @@ const cancelOrder = async () => {
       },
     };
 
-    // Menggunakan endpoint yang benar sesuai backend
     const url = `http://${BE_PRE_URL}/orders/${orderId}/cancel-customer`;
     console.log(`[OrderConfirmation] Sending PUT request to: ${url}`);
 
@@ -286,7 +282,6 @@ const cancelOrder = async () => {
     
     console.log('[OrderConfirmation] Order cancelled successfully:', data);
     
-    // Update local state
     order.value.orderStatus = 'Cancelled';
 
     alert('Pesanan berhasil dibatalkan!');
@@ -308,7 +303,6 @@ const cancelOrder = async () => {
   }
 };
 
-// Helper function to check if order can be cancelled
 const canCancelOrder = (status) => {
   return ['Pending Payment', 'Processing'].includes(status);
 };
@@ -326,12 +320,10 @@ const formatDate = (dateString, includeTime = false) => {
 };
 
 const getImageUrl = (imagePath) => {
-  // Logic to construct the correct base URL for static files
-  // Assuming BE_PRE_URL from '../url' is 'localhost:9001/api/v1'
-  // We want 'http://localhost:9001'
+ 
   const baseUrl = `http://${BE_PRE_URL}`.replace('/api/v1', '');
   console.log('[OrderConfirmation] Generating image URL for:', imagePath, 'Base URL used:', baseUrl);
-  // Ensure imagePath starts with '/', if not, add it
+ 
   const finalImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
   return `${baseUrl}${finalImagePath}`;
 };

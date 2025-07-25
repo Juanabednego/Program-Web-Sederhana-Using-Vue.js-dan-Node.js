@@ -108,7 +108,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useCartStore } from '../stores/cart';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import BE_PRE_URL from '../url/index.js'; // Pastikan path ini benar
+import BE_PRE_URL from '../url/index.js'; 
 
 const router = useRouter();
 const cartStore = useCartStore();
@@ -119,20 +119,18 @@ const agreedToTerms = ref(false);
 const loading = ref(false);
 const error = ref(null);
 
-const shippingPrice = ref(10000); // Contoh biaya ongkir
-const taxRate = ref(0.10); // Pajak 10%
+const shippingPrice = ref(10000);
+const taxRate = ref(0.10); 
 
 const isCheckingLogin = ref(true);
 const userInfo = ref(null);
 
-// Computed properties for price calculations
 const itemsPrice = computed(() => cartStore.cartSubtotal);
 const taxPrice = computed(() => itemsPrice.value * taxRate.value);
 const totalPrice = computed(() => itemsPrice.value + shippingPrice.value + taxPrice.value);
 
 const goBackToCart = () => router.push('/cart');
 
-// Helper: Ambil user dan token dari localStorage
 function getUserFromLocalStorage() {
   const user = localStorage.getItem('userData');
   const token = localStorage.getItem('jwt');
@@ -178,7 +176,7 @@ onMounted(() => {
   if (cartStore.items.length === 0) {
     console.warn('[CheckoutView] Cart is empty. Redirecting to products page.');
     alert('Keranjang belanja Anda kosong, silakan tambahkan produk.');
-    router.push('/products'); // Atau ke halaman produk utama Anda
+    router.push('/products');
     return;
   }
 
@@ -251,8 +249,6 @@ const submitOrder = async () => {
 
     console.log('[CheckoutView] Sending order data as JSON:', orderData);
 
-    // PERBAIKAN URL DI SINI: Hapus '/api/v1' jika BE_PRE_URL sudah mengandungnya
-    // Berdasarkan error, BE_PRE_URL kemungkinan besar sudah 'localhost:9001/api/v1'
     console.log(`[CheckoutView] Sending POST request to: http://${BE_PRE_URL}/orders`);
     const { data } = await axios.post(
       `http://${BE_PRE_URL}/orders`, // URL API yang benar (diasumsikan BE_PRE_URL sudah termasuk /api/v1)
