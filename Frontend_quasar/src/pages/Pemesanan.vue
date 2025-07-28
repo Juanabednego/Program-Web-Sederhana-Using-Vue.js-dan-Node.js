@@ -5,9 +5,26 @@
     <!-- Kontainer utama dengan padding dan lebar maksimum -->
     <div class="q-mx-auto q-pa-md" style="max-width: 1200px;">
       <!-- Header -->
-      <div class="q-mb-lg">
-        <div class="text-h4 text-weight-bold text-grey-9 q-mb-sm">Riwayat Pemesanan</div>
-        <div class="text-subtitle1 text-grey-7">Kelola dan lacak semua pesanan Anda</div>
+      <div class="q-mb-lg flex justify-between items-center">
+        <div>
+          <div class="text-h4 text-weight-bold text-grey-9 q-mb-sm">Riwayat Pemesanan</div>
+          <div class="text-subtitle1 text-grey-7">Kelola dan lacak semua pesanan Anda</div>
+        </div>
+        <!-- Tombol Hubungi Admin (WhatsApp) - Lebih Jelas -->
+        <q-btn
+          color="green-7"
+          icon="mdi-whatsapp"
+          label="Hubungi Admin"
+          size="lg"
+          @click="contactAdminViaWhatsapp"
+          class="shadow-2 q-hover-shadow--8 q-px-md q-py-sm"
+        >
+          <q-tooltip anchor="bottom middle" self="top middle" :offset="[10, 10]">
+            Hubungi Admin via WhatsApp
+            <br>
+            <span class="text-caption">Klik untuk memulai chat</span>
+          </q-tooltip>
+        </q-btn>
       </div>
 
       <!-- Loading State -->
@@ -26,7 +43,6 @@
 
       <!-- Empty State -->
       <div v-if="!loading && !error && orders.length === 0" class="text-center q-py-xl">
-        <!-- Menggunakan q-icon untuk ikon, atau tetap dengan SVG inline jika unik -->
         <q-icon name="inbox" size="xl" color="grey-4" class="q-mb-md" />
         <div class="text-h6 text-weight-medium text-grey-9 q-mb-xs">Belum ada pesanan</div>
         <div class="text-body1 text-grey-6">Anda belum memiliki pesanan apapun</div>
@@ -64,11 +80,17 @@
               <q-item v-for="item in order.orderItems" :key="item._id" class="q-py-sm">
                 <q-item-section avatar>
                   <q-img
-                    :src="item.image ? `http://localhost:9001/uploads/${item.image}` : 'https://placehold.co/64x64/E0E0E0/616161?text=No+Image'"
+                    :src="getImageUrl(item.image)"
                     :alt="item.name"
                     class="rounded-borders"
                     style="height: 64px; width: 64px; object-fit: cover;"
-                  />
+                  >
+                    <template v-slot:error>
+                      <div class="absolute-full flex flex-center bg-negative text-white text-caption">
+                        Gagal memuat gambar
+                      </div>
+                    </template>
+                  </q-img>
                 </q-item-section>
                 <q-item-section>
                   <q-item-label class="text-body1 text-weight-medium text-grey-9">{{ item.name }}</q-item-label>
@@ -122,21 +144,53 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { useQuasar } from 'quasar'; // Import useQuasar untuk notifikasi dan dialog
+import { useQuasar } from 'quasar';
 
-// Pastikan path ini benar di proyek Quasar Anda
-import BE_PRE_URL from 'src/url/index.js'; // Menggunakan path alias 'src/'
+import BE_PRE_URL from 'src/url/index.js';
 
-// Inisialisasi Quasar instance
 const $q = useQuasar();
 
-// Reactive data
 const orders = ref([]);
 const loading = ref(false);
 const error = ref(null);
 const cancellingOrderId = ref(null);
 
-// Helper function untuk mendapatkan token dari localStorage
+// Nomor WhatsApp admin (ganti dengan nomor yang sebenarnya, termasuk kode negara tanpa '+')
+const ADMIN_WHATSAPP_NUMBER = '6281234567890'; // Contoh: +62 812 3456 7890
+const WHATSAPP_MESSAGE = encodeURIComponent('Halo admin, saya ingin bertanya mengenai riwayat pesanan saya.');
+
+// Fungsi helper untuk mendapatkan URL gambar yang benar
+const getImageUrl = (imagePath) => {
+  // Jika imagePath kosong atau null, kembalikan placeholder
+  if (!imagePath) {
+    return 'https://placehold.co/64x64/E0E0E0/616161?text=Tidak+Ada+Gambar';
+  }
+
+  // Jika imagePath sudah merupakan URL lengkap (misalnya dari Cloudinary atau layanan eksternal lainnya)
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+
+  // Untuk path relatif, kita perlu membangun base URL yang benar dari BE_PRE_URL.
+  // BE_PRE_URL adalah 'localhost:9001/api/v1'. Kita hanya butuh 'http://localhost:9001' untuk aset statis.
+  let baseStaticUrl = '';
+  try {
+    const url = new URL(`http://${BE_PRE_URL}`); // Membuat objek URL untuk mendapatkan origin
+    baseStaticUrl = url.origin; // Ini akan menghasilkan 'http://localhost:9001'
+  } catch (e) {
+    console.error("Error parsing BE_PRE_URL for static assets:", e);
+    // Fallback jika BE_PRE_URL tidak valid sebagai bagian dari URL
+    baseStaticUrl = `http://${BE_PRE_URL.split('/')[0]}`; // Ambil hanya 'localhost:9001'
+  }
+
+  // Pastikan imagePath dimulai dengan slash jika itu adalah path relatif
+  const normalizedImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+
+  // Gabungkan base URL untuk aset statis dengan path gambar relatif
+  return `${baseStaticUrl}${normalizedImagePath}`;
+};
+
+
 const getTokenFromLocalStorage = () => {
   try {
     const token = localStorage.getItem('jwt') || localStorage.getItem('token');
@@ -147,7 +201,6 @@ const getTokenFromLocalStorage = () => {
   }
 };
 
-// Fetch orders dari backend
 const fetchOrders = async () => {
   console.log('[Pemesanan] Starting to fetch user orders...');
   loading.value = true;
@@ -189,7 +242,6 @@ const fetchOrders = async () => {
       error.value = err.response.data.message || 'Terjadi kesalahan saat mengambil data pesanan dari server.';
 
       if (err.response.status === 401) {
-        // Mengganti alert() dengan $q.notify()
         $q.notify({
           type: 'negative',
           message: 'Sesi Anda telah berakhir. Harap login kembali.',
@@ -215,11 +267,9 @@ const fetchOrders = async () => {
   }
 };
 
-// Cancel order function
 const cancelOrder = async (orderId) => {
   console.log(`[Pemesanan] Attempting to cancel order: ${orderId}`);
 
-  // Mengganti confirm() dengan $q.dialog()
   $q.dialog({
     title: 'Konfirmasi Pembatalan',
     message: 'Apakah Anda yakin ingin membatalkan pesanan ini?',
@@ -248,13 +298,11 @@ const cancelOrder = async (orderId) => {
 
       console.log('[Pemesanan] Order cancelled successfully:', data);
 
-      // Update local state
       const orderIndex = orders.value.findIndex(order => order._id === orderId);
       if (orderIndex !== -1) {
         orders.value[orderIndex].orderStatus = 'Cancelled';
       }
 
-      // Mengganti alert() dengan $q.notify()
       $q.notify({
         type: 'positive',
         message: 'Pesanan berhasil dibatalkan!',
@@ -273,7 +321,6 @@ const cancelOrder = async (orderId) => {
         errorMessage = err.message;
       }
 
-      // Mengganti alert() dengan $q.notify()
       $q.notify({
         type: 'negative',
         message: errorMessage,
@@ -286,10 +333,15 @@ const cancelOrder = async (orderId) => {
   });
 };
 
-// Helper functions
+// Fungsi untuk membuka chat WhatsApp
+const contactAdminViaWhatsapp = () => {
+  const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
+  window.open(whatsappUrl, '_blank');
+};
+
 const getStatusBadgeColor = (status) => {
   const statusColors = {
-    'Pending Payment': 'yellow-8', // Warna Quasar
+    'Pending Payment': 'yellow-8',
     'Processing': 'blue-8',
     'Shipped': 'purple-8',
     'Delivered': 'green-8',
@@ -297,7 +349,7 @@ const getStatusBadgeColor = (status) => {
     'Refunded': 'grey-8',
     'Completed': 'green-8',
   };
-  return statusColors[status] || 'grey-8'; // Default warna Quasar
+  return statusColors[status] || 'grey-8';
 };
 
 const canCancelOrder = (status) => {
@@ -319,18 +371,13 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID').format(amount);
 };
 
-// Component lifecycle
 onMounted(() => {
   fetchOrders();
 });
 </script>
 
 <style scoped>
-/* Anda dapat menambahkan gaya khusus di sini jika diperlukan.
-   Sebagian besar styling sekarang ditangani oleh komponen Quasar dan kelas utilitasnya. */
-
-/* Contoh jika Anda ingin garis pemisah pada card-section */
 .border-t-grey-3 {
-  border-top: 1px solid #e0e0e0; /* Warna grey-3 Quasar */
+  border-top: 1px solid #e0e0e0;
 }
 </style>

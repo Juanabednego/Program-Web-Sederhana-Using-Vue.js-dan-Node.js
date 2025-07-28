@@ -9,29 +9,29 @@
         <q-spinner-dots color="primary" size="3em" class="q-mb-md" />
         <div class="text-h6 text-grey-7">Memuat statistik ringkasan...</div>
       </div>
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md q-mb-xl">
-        <q-card class="shadow-lg rounded-borders q-pa-md text-center">
-          <q-card-section>
-            <div class="text-subtitle1 text-grey-7">Total Pesanan</div>
-            <div class="text-h4 text-weight-bold text-blue-8">{{ totalOrders }}</div>
+      <div v-else class="row q-col-gutter-lg q-mb-xl">
+        <q-card  class="col-12 col-md-3 shadow-2 rounded-borders q-pa-md text-center stat-card q-hover-shadow--4">
+          <q-card-section class="q-pa-sm"> <!-- Mengurangi padding di sini -->
+            <div class="text-grey-7 text-body1">Total Pesanan</div> <!-- Mengurangi ukuran teks -->
+            <div class="text-h5 text-weight-bold text-blue-8">{{ totalOrders }}</div> <!-- Mengurangi ukuran teks -->
           </q-card-section>
         </q-card>
-        <q-card class="shadow-lg rounded-borders q-pa-md text-center">
-          <q-card-section>
-            <div class="text-subtitle1 text-grey-7">Total Pendapatan</div>
-            <div class="text-h4 text-weight-bold text-green-8">{{ formattedTotalRevenue }}</div>
+        <q-card  class="col-12 col-md-3 shadow-2 rounded-borders q-pa-md text-center stat-card q-hover-shadow--4">
+          <q-card-section class="q-pa-sm"> <!-- Mengurangi padding di sini -->
+            <div class="text-grey-7 text-body1">Total Pendapatan</div> <!-- Mengurangi ukuran teks -->
+            <div class="text-h5 text-weight-bold text-green-8">{{ formattedTotalRevenue }}</div> <!-- Mengurangi ukuran teks -->
           </q-card-section>
         </q-card>
-        <q-card class="shadow-lg rounded-borders q-pa-md text-center">
-          <q-card-section>
-            <div class="text-subtitle1 text-grey-7">Jumlah Produk</div>
-            <div class="text-h4 text-weight-bold text-purple-8">{{ totalProducts }}</div>
+        <q-card  class="col-12 col-md-3 shadow-2 rounded-borders q-pa-md text-center stat-card q-hover-shadow--4">
+          <q-card-section class="q-pa-sm"> <!-- Mengurangi padding di sini -->
+            <div class="text-grey-7 text-body1">Jumlah Produk</div> <!-- Mengurangi ukuran teks -->
+            <div class="text-h5 text-weight-bold text-purple-8">{{ totalProducts }}</div> <!-- Mengurangi ukuran teks -->
           </q-card-section>
         </q-card>
-        <q-card class="shadow-lg rounded-borders q-pa-md text-center">
-          <q-card-section>
-            <div class="text-subtitle1 text-grey-7">Jumlah Pengguna</div>
-            <div class="text-h4 text-weight-bold text-red-8">{{ totalUsers }}</div>
+        <q-card  class="col-12 col-md-3 shadow-2 rounded-borders q-pa-md text-center stat-card q-hover-shadow--4">
+          <q-card-section class="q-pa-sm"> <!-- Mengurangi padding di sini -->
+            <div class="text-grey-7 text-body1">Jumlah Pengguna</div> <!-- Mengurangi ukuran teks -->
+            <div class="text-h5 text-weight-bold text-red-8">{{ totalUsers }}</div> <!-- Mengurangi ukuran teks -->
           </q-card-section>
         </q-card>
       </div>
@@ -46,7 +46,7 @@
         </q-card>
 
         <!-- Placeholder for Monthly Orders Chart -->
-        <q-card class="shadow-lg rounded-borders q-pa-md flex flex-center" style="min-height: 450px;">
+        <q-card class="shadow-lg rounded-borders q-pa-md flex flex-center" style="min-height: 400px;">
           <q-card-section>
             <div class="text-h6 text-grey-5">Grafik Pesanan per Bulan (akan ditambahkan)</div>
           </q-card-section>
@@ -55,7 +55,7 @@
 
       <!-- Placeholder for Orders by Status Chart -->
       <div class="grid grid-cols-1 q-mb-xl">
-        <q-card class="shadow-lg rounded-borders q-pa-md flex flex-center" style="min-height: 450px;">
+        <q-card class="shadow-lg rounded-borders q-pa-md flex flex-center" style="min-height: 400px;">
           <q-card-section>
             <div class="text-h6 text-grey-5">Grafik Pesanan Berdasarkan Status (akan ditambahkan)</div>
           </q-card-section>
@@ -63,7 +63,7 @@
       </div>
 
       <!-- User List Section -->
-      <q-card class="shadow-lg rounded-borders q-pa-lg">
+      <q-card class="shadow-lg rounded-borders q-pa-md">
         <q-card-section>
           <div class="text-h5 text-weight-bold text-grey-9 q-mb-md text-center">Daftar Pengguna</div>
           <div v-if="isLoadingUsers" class="text-center q-py-xl">
@@ -91,6 +91,8 @@
               row-key="_id"
               hide-bottom
               flat
+              :rows-per-page="0"
+              v-model:pagination="userPagination"
             >
               <template v-slot:header="props">
                 <q-tr :props="props" class="bg-grey-1">
@@ -154,14 +156,13 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import { useQuasar } from 'quasar'; // Import useQuasar for notifications and dialogs
-import TopSellingProductsChart from 'src/components/TopSellingProductsChart.vue'; // Adjust path if necessary
+import { useQuasar } from 'quasar';
+import TopSellingProductsChart from 'src/components/TopSellingProductsChart.vue';
 
-// Adjust path if necessary
 import BE_PRE_URL from 'src/url/index.js';
 
 const router = useRouter();
-const $q = useQuasar(); // Initialize Quasar instance
+const $q = useQuasar();
 
 const loadingStats = ref(true);
 const totalOrders = ref(0);
@@ -175,6 +176,15 @@ const search = ref('');
 const sortKey = ref('');
 const sortAsc = ref(true);
 
+// Definisikan objek pagination untuk q-table pengguna
+const userPagination = ref({
+  rowsPerPage: 0, // Menampilkan semua baris
+  sortBy: null,
+  descending: false,
+  page: 1,
+  rowsNumber: 0 // Akan diisi setelah data dimuat
+});
+
 // QTable columns definition for the user table
 const userColumns = [
   { name: 'username', label: 'Username', align: 'left', field: 'username', sortable: true },
@@ -182,7 +192,6 @@ const userColumns = [
   { name: 'nama', label: 'Nama', align: 'left', field: 'nama', sortable: true },
   { name: 'actions', label: 'Actions', align: 'center', sortable: false }
 ];
-
 
 function getUserInfoFromLocalStorage() {
   const user = localStorage.getItem('userData');
@@ -231,7 +240,6 @@ const fetchSummaryStats = async () => {
 
     totalProducts.value = pipaRes.data ? pipaRes.data.length : 0;
 
-    // Filter out admin users from totalUsers count if desired, or adjust backend to send only non-admin
     totalUsers.value = usersRes.data.data ? usersRes.data.data.length : 0;
 
   } catch (error) {
@@ -273,6 +281,7 @@ const fetchUsers = async () => {
       }
     });
     users.value = response.data.data;
+    userPagination.value.rowsNumber = users.value.length; // Update rowsNumber
   } catch (error) {
     console.error('Gagal mengambil data user:', error);
     let errorMessage = 'Terjadi kesalahan saat mengambil data pengguna.';
@@ -297,7 +306,7 @@ const deleteUser = async (id, username) => {
     cancel: true,
     persistent: true
   }).onOk(async () => {
-    isLoadingUsers.value = true; // Set loading for user table
+    isLoadingUsers.value = true;
     const userInfo = getUserInfoFromLocalStorage();
     if (!userInfo) {
       isLoadingUsers.value = false;
@@ -322,7 +331,7 @@ const deleteUser = async (id, username) => {
         position: 'top',
         timeout: 2000
       });
-      await fetchUsers(); // Refresh user list
+      await fetchUsers();
     } catch (err) {
       console.error('Gagal menonaktifkan user:', err);
       let errorMessage = 'Gagal menonaktifkan user. Pastikan Anda memiliki izin.';

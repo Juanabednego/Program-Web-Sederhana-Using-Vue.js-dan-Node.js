@@ -1,1 +1,25 @@
-// app global css in SCSS form
+
+/* Pastikan tabel Quasar merender semua baris */
+.q-table__container,
+.q-table__middle {
+  /* Hapus batasan tinggi yang mungkin ada */
+  height: auto !important;
+  max-height: none !important;
+  /* Pastikan konten tidak terpotong atau memiliki scrollbar internal yang tidak diinginkan */
+  overflow: visible !important;
+}
+
+/* Jika ada wrapper di sekitar q-table yang membatasi tinggi, targetkan juga */
+/* Anda mungkin perlu menyesuaikan selektor ini berdasarkan struktur HTML Anda */
+.q-page > div > .q-card > .q-table {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Pastikan tbody tidak memiliki tinggi tetap */
+.q-table tbody {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}

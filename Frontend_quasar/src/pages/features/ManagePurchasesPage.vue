@@ -58,6 +58,15 @@
             row-key="_id"
             hide-bottom
             flat
+            :rows-per-page="0"
+             virtual-scroll
+            :virtual-scroll-item-size="72"  
+            :rows-per-page-options="[0]"
+            :pagination="{
+              page: 1,
+              rowsPerPage: 0
+            }"
+            style="max-height: 500px; overflow-y: auto;"
           >
             <template v-slot:header="props">
               <q-tr :props="props" class="bg-grey-1">
@@ -242,6 +251,7 @@
               row-key="_id.year + '-' + _id.month"
               hide-bottom
               flat
+             :rows-per-page-options="0"
               bordered
             >
               <template v-slot:body-cell-month_year="props">
@@ -268,6 +278,7 @@
               hide-bottom
               flat
               bordered
+              :rows-per-page="0"
             >
               <template v-slot:body-cell-order_id="props">
                 <q-td :props="props" class="text-caption">
@@ -905,7 +916,7 @@ onMounted(() => {
     max-width: none !important;
     width: auto !important;
     height: auto !important;
-    overflow: visible !important;
+    overflow: visible tant;
   }
 }
 </style>

@@ -6,6 +6,7 @@ import { Quasar, Dialog, Notify } from 'quasar';
 // Import Quasar css
 import '@quasar/extras/material-icons/material-icons.css';
 import 'quasar/src/css/index.sass';
+import 'quasar/src/css/app.scss';
 
 // Import Pinia (jika Anda menggunakannya)
 import { createPinia } from 'pinia';

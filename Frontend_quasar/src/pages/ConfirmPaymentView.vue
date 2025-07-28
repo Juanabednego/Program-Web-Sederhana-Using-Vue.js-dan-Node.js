@@ -1,4 +1,3 @@
-<!-- src/pages/ConfirmPaymentView.vue -->
 <template>
   <!-- q-page sebagai pembungkus utama untuk halaman, dengan latar belakang abu-abu terang Quasar -->
   <q-page class="q-pa-md bg-grey-2 flex flex-center">
@@ -190,10 +189,9 @@ const fetchOrderDetails = async () => {
     console.log(`[ConfirmPaymentView] API URL: http://${BE_PRE_URL}/orders/${orderId}/verify-token?token=${token}`);
     const { data } = await axios.get(`http://${BE_PRE_URL}/orders/${orderId}/verify-token?token=${token}`);
     order.value = data;
-    if (order.value.orderStatus !== 'Pending Payment') {
-      uploadSuccess.value = 'Pesanan ini sudah tidak dalam status "Pending Payment".';
-    }
     console.log('[ConfirmPaymentView] Order details fetched successfully:', data);
+    // Tambahkan log ini untuk melihat status pesanan yang diterima
+    console.log('[ConfirmPaymentView] Fetched orderStatus for display:', order.value.orderStatus);
   } catch (err) {
     console.error('[ConfirmPaymentView] Gagal memverifikasi token atau mengambil detail pesanan:', err);
     let errorMessage = 'Terjadi kesalahan saat memverifikasi tautan.';
@@ -254,7 +252,8 @@ const submitProofOfTransfer = async () => {
   try {
     console.log(`[ConfirmPaymentView] Submitting proof of transfer for orderId: ${orderId}`);
     console.log(`[ConfirmPaymentView] API URL: http://${BE_PRE_URL}/orders/${orderId}/upload-proof`);
-    const { data } = await axios.put(`http://${BE_PRE_URL}/orders/${orderId}/upload-proof`, formData, {
+    // Mengubah axios.put menjadi axios.post
+    const { data } = await axios.post(`http://${BE_PRE_URL}/orders/${orderId}/upload-proof`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -331,13 +330,14 @@ const getImageUrl = (imagePath) => {
     return imagePath;
   }
 
-  const finalImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  // Pastikan path dimulai dengan slash jika itu adalah path relatif
+  const finalImagePath = imagePath && !imagePath.startsWith('/') ? `/${imagePath}` : imagePath;
   return `${baseUrl}${finalImagePath}`;
 };
 </script>
 
 <style scoped>
-/* Custom CSS for borders if Quasar's q-separator is not enough */
+/* Custom CSS untuk border jika q-separator Quasar tidak cukup */
 .border-b-grey-3 {
   border-bottom: 1px solid #e0e0e0; /* Quasar's grey-3 */
 }

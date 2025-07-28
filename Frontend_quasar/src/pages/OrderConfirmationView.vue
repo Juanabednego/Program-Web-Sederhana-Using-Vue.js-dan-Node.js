@@ -19,12 +19,16 @@
         <div class="text-body1 text-weight-bold">Error!</div>
         <div class="text-body2">{{ error }}</div>
         <div class="text-caption q-mt-sm">Pastikan Anda sudah login dan pesanan dengan ID ini ada.</div>
+        <template v-slot:action>
+          <q-btn flat label="Kembali ke Beranda" to="/home" color="red-8" />
+          <q-btn flat label="Coba Login Lagi" @click="redirectToLogin" color="red-8" />
+        </template>
       </q-banner>
 
       <!-- Order Details Display -->
       <div v-else-if="order">
         <div class="text-h3 text-positive text-weight-bold q-mb-md">Pesanan Berhasil Dibuat!</div>
-        <div class="text-body1 text-grey-8 q-mb-lg">Terima kasih atas pesanan Anda. Detail pesanan Anda:</div>
+        <p class="text-lg text-grey-7 q-mb-lg">Terima kasih atas pesanan Anda. Detail pesanan Anda:</p>
 
         <!-- q-card untuk detail pesanan -->
         <q-card class="q-pa-md shadow-lg rounded-borders q-mx-auto text-left">
@@ -231,7 +235,7 @@ const $q = useQuasar();
 
 const route = useRoute();
 const router = useRouter();
-const orderId = route.params.orderId;
+const orderId = ref(null); // Menggunakan ref untuk orderId
 
 const order = ref(null);
 const loading = ref(true);
@@ -256,14 +260,14 @@ function getUserInfoFromLocalStorage() {
   console.log('   jwt token found:', !!token);
 
   if (!user || !token) {
-    console.warn('[OrderConfirmation] User data or JWT token is missing in localStorage.');
+    console.warn('[OrderConfirmation] User data or JWT token is missing in localStorage. User needs to login.');
     return null;
   }
 
   try {
     const parsedUser = JSON.parse(user);
     parsedUser.token = token;
-    console.log('[OrderConfirmation] Successfully retrieved user info with token:', parsedUser);
+    console.log('[OrderConfirmation] Successfully retrieved user info with token.');
     return parsedUser;
   } catch (e) {
     console.error('[OrderConfirmation] Error parsing user data from localStorage:', e);
@@ -272,7 +276,7 @@ function getUserInfoFromLocalStorage() {
 }
 
 const fetchOrder = async () => {
-  console.log(`[OrderConfirmation] Attempting to fetch order with ID: ${orderId}`);
+  console.log(`[OrderConfirmation] Attempting to fetch order with ID: ${orderId.value}`);
   loading.value = true;
   error.value = null;
 
@@ -280,8 +284,16 @@ const fetchOrder = async () => {
     const userInfo = getUserInfoFromLocalStorage();
 
     if (!userInfo || !userInfo.token) {
-      console.error('[OrderConfirmation] No valid user info or token found to fetch order.');
-      throw new Error('Anda harus login untuk melihat detail pesanan ini. Token autentikasi tidak ditemukan.');
+      console.error('[OrderConfirmation] No valid user info or token found to fetch order. Redirecting to login.');
+      // Tidak perlu throw error di sini, langsung redirect
+      $q.notify({
+        type: 'negative',
+        message: 'Anda harus login untuk melihat detail pesanan ini. Token autentikasi tidak ditemukan.',
+        position: 'top',
+        timeout: 3000
+      });
+      router.push({ name: 'Login', query: { redirect: route.fullPath } });
+      return; // Penting: keluar dari fungsi setelah redirect
     }
 
     const config = {
@@ -289,12 +301,12 @@ const fetchOrder = async () => {
         Authorization: `Bearer ${userInfo.token}`,
       },
     };
-    console.log(`[OrderConfirmation] Sending GET request to: http://${BE_PRE_URL}/orders/${orderId}`);
-    console.log('[OrderConfirmation] Authorization Header:', config.headers.Authorization);
+    console.log(`[OrderConfirmation] Sending GET request to: http://${BE_PRE_URL}/orders/${orderId.value}`);
+    // console.log('[OrderConfirmation] Authorization Header:', config.headers.Authorization); // Hindari logging token sensitif di produksi
 
-    const { data } = await axios.get(`http://${BE_PRE_URL}/orders/${orderId}`, config);
+    const { data } = await axios.get(`http://${BE_PRE_URL}/orders/${orderId.value}`, config);
     order.value = data;
-    console.log('[OrderConfirmation] Order data fetched successfully:', data);
+    console.log('[OrderConfirmation] Order data fetched successfully:', order.value); // Log the assigned value
 
   } catch (err) {
     console.error('[OrderConfirmation] Error fetching order:', err);
@@ -306,10 +318,10 @@ const fetchOrder = async () => {
       console.error('[OrderConfirmation] Status:', err.response.status);
       errorMessage = err.response.data.message || errorMessage;
 
-      if (err.response.status === 401) {
+      if (err.response.status === 401 || err.response.status === 403) {
         $q.notify({
           type: 'negative',
-          message: 'Sesi Anda telah berakhir. Harap login kembali.',
+          message: 'Sesi Anda telah berakhir atau Anda tidak memiliki izin. Harap login kembali.',
           position: 'top',
           timeout: 3000
         });
@@ -325,7 +337,7 @@ const fetchOrder = async () => {
       errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi Anda.';
     } else {
       console.error('[OrderConfirmation] Axios Error (Request setup issue):', err.message);
-      errorMessage = err.message || 'Terjadi kesalahan tidak terduga.';
+      errorMessage = err.message || errorMessage;
     }
     error.value = errorMessage; // Set error.value di sini
   } finally {
@@ -335,7 +347,7 @@ const fetchOrder = async () => {
 };
 
 const cancelOrder = async () => {
-  console.log(`[OrderConfirmation] Attempting to cancel order: ${orderId}`);
+  console.log(`[OrderConfirmation] Attempting to cancel order: ${orderId.value}`);
 
   $q.dialog({
     title: 'Konfirmasi Pembatalan',
@@ -358,14 +370,14 @@ const cancelOrder = async () => {
         },
       };
 
-      const url = `http://${BE_PRE_URL}/orders/${orderId}/cancel-customer`;
+      const url = `http://${BE_PRE_URL}/orders/${orderId.value}/cancel-customer`;
       console.log(`[OrderConfirmation] Sending PUT request to: ${url}`);
 
       const { data } = await axios.put(url, {}, config);
 
       console.log('[OrderConfirmation] Order cancelled successfully:', data);
 
-      order.value.orderStatus = 'Cancelled';
+      order.value.orderStatus = data.order.orderStatus; // Update status pesanan di UI
 
       $q.notify({
         type: 'positive',
@@ -413,6 +425,27 @@ const formatDate = (dateString, includeTime = false) => {
   return date.toLocaleDateString('id-ID', options);
 };
 
+// Fungsi formatCurrency yang menyebabkan error
+const formatCurrency = (amount) => {
+  if (amount === null || amount === undefined) return 'N/A';
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(amount);
+};
+
+// Menambahkan formatPrice juga untuk konsistensi, meskipun fungsinya sama
+const formatPrice = (value) => {
+  if (value === null || value === undefined) return 'N/A';
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(value);
+};
+
+
 const getImageUrl = (imagePath) => {
   // Pastikan BE_PRE_URL tidak memiliki trailing slash
   const baseUrl = `http://${BE_PRE_URL}`;
@@ -442,14 +475,20 @@ const getOrderStatusColor = (status) => {
   }
 };
 
+const redirectToLogin = () => {
+  router.push({ name: 'Login', query: { redirect: route.fullPath } });
+};
+
 onMounted(() => {
-  console.log('[OrderConfirmation] Component mounted. Order ID from route:', orderId);
-  if (orderId) {
+  // Mengambil orderId dari route.params
+  orderId.value = route.params.orderId;
+  console.log('[OrderConfirmation] Component mounted. Order ID from route:', orderId.value);
+  if (orderId.value) {
     fetchOrder();
   } else {
     error.value = 'ID Pesanan tidak ditemukan di URL.';
     loading.value = false;
-    console.error('[OrderConfirmation] No orderId found in URL parameters.');
+    console.error('[OrderConfirmation] No orderId found in URL parameters. Cannot fetch order.');
   }
 });
 </script>

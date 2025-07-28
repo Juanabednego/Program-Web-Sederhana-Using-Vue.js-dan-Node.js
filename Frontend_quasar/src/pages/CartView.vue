@@ -186,6 +186,4 @@ const confirmRemoveItem = (productId, productName) => {
 </script>
 
 <style scoped>
-/* Anda dapat menambahkan gaya kustom di sini jika diperlukan.
-   Sebagian besar styling sudah ditangani oleh komponen Quasar dan kelas utilitasnya. */
 </style>

@@ -5,7 +5,7 @@
       <!-- Logo/Title -->
       <q-toolbar-title>
         <router-link :to="role === 'admin' ? { name: 'Dashboard' } : { name: 'Home' }" class="text-white q-link text-h6 text-weight-bold">
-          {{ role === 'admin' ? 'Admin Dashboard' : 'PipeStore' }}
+          {{ role === 'admin' ? 'Admin Dashboard' : 'PIPA STORE' }}
         </router-link>
       </q-toolbar-title>
 

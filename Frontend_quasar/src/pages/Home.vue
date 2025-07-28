@@ -2,22 +2,23 @@
 <template>
   <q-page class="q-pa-md bg-grey-1">
     <!-- Header Hero Section -->
-    <div class="hero-section text-white q-py-4xl text-center">
-      <div class="q-mx-auto q-px-md" style="max-width: 1200px;">
+    <div class="hero-section text-white text-center hero-padding hero-background-image">
+      <div class="hero-overlay"></div> 
+      <div class="q-mx-auto q-px-md relative-position" style="max-width: 1200px; z-index: 2;">
         <div class="text-h3 md:text-h2 text-weight-bold q-mb-md text-shadow-lg animate-fade-in">
           Katalog Pipa Terbaik
         </div>
-        <div class="text-h6 md:text-h5 q-mb-xl opacity-90 text-shadow-lg animate-fade-in delay-200">
+        <div class="text-h6 md:text-h5 q-mb-xl opacity-90 animate-fade-in delay-200">
           Temukan pipa berkualitas tinggi untuk kebutuhan proyek Anda
         </div>
-        <div class="flex flex-center q-gutter-md text-shadow-lg animate-fade-in delay-400">
-          <q-chip outline color="white" text-color="blue-grey-10" icon="check_circle" class="text-weight-medium q-py-sm q-px-md shadow-2 q-hover-shadow--2">
+        <div class="flex flex-center q-gutter-md animate-fade-in delay-400">
+          <q-chip outline color="white" text-color="blue-grey-10" icon="check_circle" class="text-weight-medium q-py-sm q-px-md shadow-2 hero-chip">
             Kualitas Terjamin
           </q-chip>
-          <q-chip outline color="white" text-color="blue-grey-10" icon="attach_money" class="text-weight-medium q-py-sm q-px-md shadow-2 q-hover-shadow--2">
+          <q-chip outline color="white" text-color="blue-grey-10" icon="attach_money" class="text-weight-medium q-py-sm q-px-md shadow-2 hero-chip">
             Harga Kompetitif
           </q-chip>
-          <q-chip outline color="white" text-color="blue-grey-10" icon="thumb_up" class="text-weight-medium q-py-sm q-px-md shadow-2 q-hover-shadow--2">
+          <q-chip outline color="white" text-color="blue-grey-10" icon="thumb_up" class="text-weight-medium q-py-sm q-px-md shadow-2 hero-chip">
             Dipercaya Pelanggan
           </q-chip>
         </div>
@@ -131,11 +132,11 @@
           <q-card
             v-for="pipe in filteredPipes"
             :key="pipe._id"
-            class="col-12 col-sm-6 col-md-4 col-lg-3 shadow-2 rounded-borders overflow-hidden product-card q-hover-shadow--6 animate-scale-in"
+            class="col-12 col-sm-6 col-md-4 col-lg-2 col-xl-2 shadow-2 rounded-borders overflow-hidden product-card q-hover-shadow--6 animate-scale-in"
           >
             <div class="relative">
               <q-img
-                :src="pipe.imageUrl ? pipe.imageUrl : 'https://placehold.co/400x300/CFD8DC/607D8B?text=No+Image'"
+                :src="pipe.imageUrl ? pipe.imageUrl : 'https://placehold.co/400x180/CFD8DC/607D8B?text=No+Image'"
                 :alt="pipe.pipeName"
                 class="product-image"
                 loading="lazy"
@@ -405,6 +406,28 @@ onMounted(() => {
   overflow: hidden; /* For any potential background patterns */
 }
 
+.hero-background-image {
+  background-image: url('https://placehold.co/1920x600/1A237E/E8EAF6?text=Katalog Pipa'); /* Gambar latar belakang */
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed; /* Efek parallax ringan */
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Overlay gelap transparan */
+  z-index: 1;
+}
+
+.hero-padding {
+  padding-top: 120px;
+  padding-bottom: 120px;
+}
+
 /* Text Shadow for Hero Title */
 .text-shadow-lg {
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
@@ -438,6 +461,16 @@ onMounted(() => {
   /* Add staggered delay for each card if desired, e.g., using v-for index */
 }
 
+/* Hero Chips */
+.hero-chip {
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.hero-chip:hover {
+  transform: translateY(-3px); /* Lift effect on hover */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+}
+
 /* Stat Cards */
 .stat-card {
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
@@ -463,7 +496,7 @@ onMounted(() => {
 }
 
 .product-image {
-  height: 200px; /* Consistent image height */
+  height: 180px; /* Consistent image height */
   width: 100%; /* Ensure it fills the width */
   object-fit: cover;
 }

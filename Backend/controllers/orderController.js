@@ -12,7 +12,7 @@ import createTransporter from '../config/emailConfig.js';
 const sendInvoiceEmail = async (order, user, proofUploadToken) => {
     const transporter = createTransporter();
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:9000';
-    const uploadLink = `${frontendUrl}/confirm-payment?orderId=${order._id}&token=${proofUploadToken}`;
+    const uploadLink = `${frontendUrl}/confirm-payment?orderId=${order._id}&token=${proofUploadToken}`  ;
 
     let orderItemsHtml = '';
     order.orderItems.forEach(item => {

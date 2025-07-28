@@ -45,7 +45,7 @@ const routes = [
       },
       // --- START NEW ROUTES FOR EMAIL INVOICE ---
       {
-        path: 'confirm-payment', // Contoh: /confirm-payment?orderId=xxx&token=yyy
+        path: 'confirm-payment', 
         name: 'confirmPayment',
         component: () => import('src/pages/ConfirmPaymentView.vue'),
         meta: { requiresAuth: false, isPublicWithToken: true },

@@ -204,8 +204,8 @@ function getUserFromLocalStorage() {
   const user = localStorage.getItem('userData');
   const token = localStorage.getItem('jwt');
   console.log('[CheckoutView] Getting user from local storage:');
-  console.log('   userData:', user ? JSON.parse(user) : 'Not found');
-  console.log('   jwt token:', token ? 'Found (length: ' + token.length + ')' : 'Not found');
+  console.log('    userData:', user ? JSON.parse(user) : 'Not found');
+  console.log('    jwt token:', token ? 'Found (length: ' + token.length + ')' : 'Not found');
 
   if (!user || !token) {
     console.log('[CheckoutView] User data or token not found in local storage.');
@@ -263,12 +263,12 @@ onMounted(() => {
 
 const submitOrder = async () => {
   console.log('[CheckoutView] Submitting order...');
-  console.log('   Current userInfo:', userInfo.value);
-  console.log('   Token for Authorization:', userInfo.value?.token ? 'Exists' : 'MISSING/NULL');
-  console.log('   Shipping Address:', shippingAddress.value);
-  console.log('   Payment Method:', paymentMethod.value);
-  console.log('   Agreed to Terms:', agreedToTerms.value);
-  console.log('   Cart Items Count:', cartStore.items.length);
+  console.log('    Current userInfo:', userInfo.value);
+  console.log('    Token for Authorization:', userInfo.value?.token ? 'Exists' : 'MISSING/NULL');
+  console.log('    Shipping Address:', shippingAddress.value);
+  console.log('    Payment Method:', paymentMethod.value);
+  console.log('    Agreed to Terms:', agreedToTerms.value);
+  console.log('    Cart Items Count:', cartStore.items.length);
 
   if (!userInfo.value || !userInfo.value.token) {
     error.value = 'Anda belum login atau sesi Anda telah berakhir. Silakan login kembali.';
@@ -371,7 +371,8 @@ const submitOrder = async () => {
       position: 'top',
       timeout: 5000
     });
-    router.push({ name: 'orderConfirmation', query: { orderId: data._id } }); // Menggunakan query params
+    // FIX: Mengubah `query` menjadi `params` sesuai definisi rute di `routes.js`
+    router.push({ name: 'orderConfirmation', params: { orderId: data._id } });
     // window.location.reload(); // Opsional, jika Anda ingin reload penuh
   } catch (err) {
     console.error('[CheckoutView] Gagal submit pesanan:', err);

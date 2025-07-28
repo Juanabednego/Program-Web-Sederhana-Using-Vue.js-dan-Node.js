@@ -72,7 +72,7 @@ router.route('/:id/notes')
 
 router.get('/:id/verify-token', verifyOrderToken);
 
-router.put('/:id/upload-proof', upload.single('proofOfTransferImage'), uploadProofByToken);
+router.post('/:id/upload-proof', upload.single('proofOfTransferImage'), uploadProofByToken);
 
 router.route('/user/:userId').get(protectedMiddleware, getOrdersByUserId);
 

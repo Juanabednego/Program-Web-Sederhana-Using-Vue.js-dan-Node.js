@@ -67,6 +67,14 @@
               row-key="_id"
               hide-bottom
               flat
+               virtual-scroll
+  :virtual-scroll-item-size="72"   
+  :rows-per-page-options="[0]"
+  :pagination="{
+    page: 1,
+    rowsPerPage: 0
+  }"
+  style="max-height: 500px; overflow-y: auto;"
             >
               <template v-slot:header="props">
                 <q-tr :props="props" class="bg-grey-1">
