@@ -70,22 +70,27 @@
                 {{ purchase.isDelivered ? `Sudah Dikirim ${purchase.deliveredAt ? 'pada ' + formatDate(purchase.deliveredAt, true) : ''}` : 'Belum Dikirim' }}
               </q-badge>
             </div>
-            <div v-if="purchase.proofOfTransfer" class="col-12">
+
+            <!-- Bukti Transfer (Hanya tampil jika metode Transfer Bank dan ada gambar) -->
+            <div v-if="purchase.paymentMethod === 'Transfer Bank' && purchase.proofOfTransferImage" class="col-12">
               <p class="text-body2 text-grey-7 q-mb-xs">Bukti Transfer:</p>
-              <a :href="getImageUrl(purchase.proofOfTransfer)" target="_blank" class="text-blue-8 hover-underline">
-                <q-img :src="getImageUrl(purchase.proofOfTransfer)" alt="Bukti Transfer"
-                       class="rounded-borders shadow-md border-grey-3"
-                       style="max-width: 200px; height: auto; object-fit: cover;"
-                       no-native-menu
-                >
-                  <template v-slot:error>
-                    <div class="absolute-full flex flex-center bg-negative text-white">
-                      Gagal memuat gambar
-                    </div>
-                  </template>
-                </q-img>
-                <p class="text-caption q-mt-xs">Klik untuk melihat gambar penuh</p>
-              </a>
+              <q-img :src="purchase.proofOfTransferImage" alt="Bukti Transfer"
+                     class="rounded-borders shadow-md border-grey-3 cursor-pointer"
+                     style="max-width: 250px; height: auto; object-fit: cover;"
+                     no-native-menu
+                     @click="showProof(purchase.proofOfTransferImage)"
+              >
+                <template v-slot:error>
+                  <div class="absolute-full flex flex-center bg-negative text-white">
+                    Gagal memuat gambar
+                  </div>
+                </template>
+              </q-img>
+              <p class="text-caption q-mt-xs text-grey-6">Klik gambar untuk melihat ukuran penuh</p>
+            </div>
+            <div v-else-if="purchase.paymentMethod === 'Transfer Bank' && !purchase.proofOfTransferImage" class="col-12">
+              <p class="text-body2 text-grey-7 q-mb-xs">Bukti Transfer:</p>
+              <p class="text-body1 text-grey-6 italic">Belum ada bukti transfer diunggah.</p>
             </div>
           </div>
         </q-card-section>
@@ -96,7 +101,7 @@
           <div class="row q-col-gutter-sm">
             <div class="col-12 col-sm-6 col-md-4">
               <q-btn
-                @click="markOrderAsPaid(purchase._id)"
+                @click="confirmAdminAction('markPaid')"
                 v-if="!purchase.isPaid"
                 label="Tandai Sudah Dibayar"
                 color="green-7"
@@ -106,7 +111,7 @@
             </div>
             <div class="col-12 col-sm-6 col-md-4">
               <q-btn
-                @click="updateOrderStatus(purchase._id, 'Processing')"
+                @click="confirmAdminAction('updateStatus', 'Processing')"
                 v-if="purchase.orderStatus === 'Pending Payment' || purchase.orderStatus === 'Paid'"
                 label="Set ke Processing"
                 color="blue-7"
@@ -116,7 +121,7 @@
             </div>
             <div class="col-12 col-sm-6 col-md-4">
               <q-btn
-                @click="updateOrderStatus(purchase._id, 'Shipped')"
+                @click="confirmAdminAction('updateStatus', 'Shipped')"
                 v-if="purchase.orderStatus === 'Processing' && !purchase.isDelivered"
                 label="Set ke Dikirim"
                 color="purple-7"
@@ -126,7 +131,7 @@
             </div>
             <div class="col-12 col-sm-6 col-md-4">
               <q-btn
-                @click="markOrderAsDelivered(purchase._id)"
+                @click="confirmAdminAction('markDelivered')"
                 v-if="purchase.orderStatus === 'Shipped' && !purchase.isDelivered"
                 label="Tandai Sudah Dikirim"
                 color="teal-7"
@@ -136,7 +141,7 @@
             </div>
             <div class="col-12 col-sm-6 col-md-4">
               <q-btn
-                @click="updateOrderStatus(purchase._id, 'Completed')"
+                @click="confirmAdminAction('updateStatus', 'Completed')"
                 v-if="purchase.isPaid && purchase.isDelivered && purchase.orderStatus !== 'Completed'"
                 label="Set ke Selesai"
                 color="green-9"
@@ -146,7 +151,7 @@
             </div>
             <div class="col-12 col-sm-6 col-md-4">
               <q-btn
-                @click="updateOrderStatus(purchase._id, 'Cancelled')"
+                @click="confirmAdminAction('updateStatus', 'Cancelled')"
                 v-if="purchase.orderStatus !== 'Cancelled' && purchase.orderStatus !== 'Completed'"
                 label="Batalkan Pesanan"
                 color="red-7"
@@ -247,6 +252,32 @@
         </q-card-section>
       </q-card>
     </div>
+
+    <!-- Dialog untuk menampilkan bukti transfer (ukuran penuh) -->
+    <q-dialog v-model="showProofDialog">
+      <q-card class="q-dialog-plugin">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6 text-weight-bold">Bukti Transfer</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pt-md flex flex-center">
+          <q-img
+            :src="currentProofImage"
+            alt="Bukti Transfer Penuh"
+            style="max-width: 90vw; max-height: 80vh; object-fit: contain;"
+            class="rounded-borders"
+          >
+            <template v-slot:error>
+              <div class="absolute-full flex flex-center bg-negative text-white">
+                Gagal memuat gambar bukti transfer.
+              </div>
+            </template>
+          </q-img>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -254,27 +285,28 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
-import { useQuasar } from 'quasar'; // Import useQuasar untuk notifikasi dan dialog
+import { useQuasar } from 'quasar';
 
-// Pastikan path ini benar di proyek Quasar Anda
-import BE_PRE_URL from 'src/url/index.js'; // Menggunakan path alias 'src/'
+import BE_PRE_URL from 'src/url/index.js';
 
-// Inisialisasi Quasar instance
 const $q = useQuasar();
-
 const route = useRoute();
 const router = useRouter();
-const purchaseId = ref(route.params.id); // Menggunakan ref untuk purchaseId
+const purchaseId = ref(route.params.id);
 
 const purchase = ref(null);
 const loading = ref(true);
 const error = ref(null);
-const isAdmin = ref(false); // New state to check if the current user is an admin
+const isAdmin = ref(false);
+
+// State untuk dialog bukti transfer
+const showProofDialog = ref(false);
+const currentProofImage = ref('');
 
 // QTable columns definition for order items
 const itemColumns = [
+  { name: 'image', label: 'Gambar', align: 'left', field: 'image' }, // Gambar produk
   { name: 'name', required: true, label: 'Nama Produk', align: 'left', field: 'name' },
-  { name: 'image', label: 'Gambar', align: 'center', field: 'image' },
   { name: 'quantity', label: 'Kuantitas', align: 'center', field: 'quantity' },
   { name: 'price', label: 'Harga Satuan', align: 'right', field: 'price', format: val => formatCurrency(val) },
   { name: 'total', label: 'Total', align: 'right', field: row => row.quantity * row.price, format: val => formatCurrency(val) }
@@ -294,19 +326,12 @@ const getTokenFromLocalStorage = () => {
 function getUserInfoFromLocalStorage() {
   const user = localStorage.getItem('userData');
   const token = getTokenFromLocalStorage();
-  console.log('[PurchaseDetail] Attempting to get user info from localStorage...');
-  console.log('   userData found:', !!user);
-  console.log('   jwt token found:', !!token);
-
   if (!user || !token) {
-    console.warn('[PurchaseDetail] User data or JWT token is missing in localStorage.');
     return null;
   }
-
   try {
     const parsedUser = JSON.parse(user);
     parsedUser.token = token;
-    console.log('[PurchaseDetail] Successfully retrieved user info with token. User Role:', parsedUser.role);
     return parsedUser;
   } catch (e) {
     console.error('[PurchaseDetail] Error parsing user data from localStorage:', e);
@@ -315,7 +340,6 @@ function getUserInfoFromLocalStorage() {
 }
 
 const fetchPurchaseDetails = async () => {
-  console.log(`[PurchaseDetail] Attempting to fetch purchase with ID: ${purchaseId.value}`);
   loading.value = true;
   error.value = null;
 
@@ -323,7 +347,6 @@ const fetchPurchaseDetails = async () => {
     const userInfo = getUserInfoFromLocalStorage();
 
     if (!userInfo || !userInfo.token) {
-      console.error('[PurchaseDetail] No valid user info or token found to fetch order.');
       $q.notify({
         type: 'negative',
         message: 'Anda harus login untuk melihat detail pesanan ini. Token autentikasi tidak ditemukan.',
@@ -337,7 +360,6 @@ const fetchPurchaseDetails = async () => {
       return;
     }
 
-    // Check if user is admin
     isAdmin.value = userInfo.role === 'admin';
 
     const config = {
@@ -345,9 +367,8 @@ const fetchPurchaseDetails = async () => {
         Authorization: `Bearer ${userInfo.token}`,
       },
     };
-    console.log(`[PurchaseDetail] Sending GET request to: http://${BE_PRE_URL}/orders/${purchaseId.value}`);
-    console.log('[PurchaseDetail] Authorization Header:', config.headers.Authorization);
 
+    // Pastikan endpoint backend mengembalikan proofOfTransferImage
     const { data } = await axios.get(`http://${BE_PRE_URL}/orders/${purchaseId.value}`, config);
     purchase.value = data;
     console.log('[PurchaseDetail] Purchase details fetched successfully:', data);
@@ -358,207 +379,232 @@ const fetchPurchaseDetails = async () => {
     let errorMessage = 'Terjadi kesalahan saat mengambil detail pesanan dari server.';
 
     if (err.response) {
-      console.error('[PurchaseDetail] Server Response Error:', err.response.data);
-      console.error('[PurchaseDetail] Status:', err.response.status);
       errorMessage = err.response.data.message || errorMessage;
-
       if (err.response.status === 401) {
-        $q.notify({
-          type: 'negative',
-          message: 'Sesi Anda telah berakhir. Harap login kembali.',
-          position: 'top',
-          timeout: 3000
-        });
+        $q.notify({ type: 'negative', message: 'Sesi Anda telah berakhir. Harap login kembali.', position: 'top', timeout: 3000 });
         localStorage.removeItem('userData');
         localStorage.removeItem('jwt');
         localStorage.removeItem('token');
         router.push({ name: 'Login', query: { redirect: route.fullPath } });
       } else if (err.response.status === 404) {
         errorMessage = 'Pesanan tidak ditemukan atau Anda tidak memiliki izin untuk melihatnya.';
-      } else if (err.response.status === 403) { // Specific check for forbidden if a regular user tries to access another's order
+      } else if (err.response.status === 403) {
         errorMessage = 'Tidak Diotorisasi: Anda tidak memiliki izin untuk melihat pesanan ini.';
-        router.push({ name: 'Home' }); // Or whatever appropriate redirect
+        router.push({ name: 'Home' });
       }
     } else if (err.request) {
-      console.error('[PurchaseDetail] Network Error (No response from server):', err.request);
       errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi Anda.';
     } else {
-      console.error('[PurchaseDetail] Axios Error (Request setup issue):', err.message);
       errorMessage = err.message || 'Terjadi kesalahan tidak terduga.';
     }
-    error.value = errorMessage; // Set error.value di sini
-    purchase.value = null; // Clear purchase on error
+    error.value = errorMessage;
+    purchase.value = null;
   } finally {
     loading.value = false;
-    console.log('[PurchaseDetail] Order fetch process finished.');
   }
 };
 
-const updateOrderStatus = async (orderId, newStatus) => {
-  console.log(`[PurchaseDetail] Attempting to update order ${orderId} status to: ${newStatus}`);
+// Fungsi untuk menampilkan dialog bukti transfer
+const showProof = (imageUrl) => {
+  currentProofImage.value = imageUrl;
+  showProofDialog.value = true;
+};
+
+// Fungsi konfirmasi aksi admin dengan pengecekan bukti transfer
+const confirmAdminAction = (actionType, newStatus = null) => {
+  let title = '';
+  let message = '';
+  let actionFunction;
+
+  switch (actionType) {
+    case 'markPaid':
+      title = 'Konfirmasi Pembayaran';
+      message = 'Apakah Anda yakin ingin menandai pesanan ini sebagai sudah dibayar?';
+      actionFunction = markOrderAsPaid;
+      break;
+    case 'markDelivered':
+      title = 'Konfirmasi Pengiriman';
+      message = 'Apakah Anda yakin ingin menandai pesanan ini sebagai sudah dikirim?';
+      actionFunction = markOrderAsDelivered;
+      break;
+    case 'updateStatus':
+      title = `Konfirmasi Perubahan Status ke ${newStatus}`;
+      message = `Apakah Anda yakin ingin mengubah status pesanan ini menjadi "${newStatus}"?`;
+      actionFunction = updateOrderStatus;
+      break;
+    default:
+      return; // Jangan lakukan apa-apa jika actionType tidak dikenal
+  }
+
+  let dialogContent = `<p>${message}</p>`;
+  const hasProof = purchase.value.paymentMethod === 'Transfer Bank' && purchase.value.proofOfTransferImage;
+
+  if (hasProof) {
+    dialogContent += `
+      <p class="text-caption text-weight-bold q-mt-md">Bukti Transfer:</p>
+      <div class="flex flex-center q-mb-md">
+        <img src="${purchase.value.proofOfTransferImage}" alt="Bukti Transfer"
+             style="max-width: 150px; height: auto; object-fit: contain; border-radius: 8px; cursor: pointer;"
+             onclick="window.open('${purchase.value.proofOfTransferImage}', '_blank');" />
+      </div>
+      <p class="text-caption text-grey-6 text-center">Klik gambar untuk melihat ukuran penuh</p>
+    `;
+  } else if (purchase.value.paymentMethod === 'Transfer Bank' && !purchase.value.proofOfTransferImage) {
+    dialogContent += `<p class="text-caption text-red-7 q-mt-md">Catatan: Pesanan ini menggunakan Transfer Bank, tetapi bukti transfer belum diunggah.</p>`;
+  }
 
   $q.dialog({
-    title: 'Konfirmasi Perubahan Status',
-    message: `Apakah Anda yakin ingin mengubah status pesanan ini menjadi "${newStatus}"?`,
+    title: title,
+    message: dialogContent,
+    html: true, // Penting untuk merender HTML di dalam pesan
     cancel: true,
     persistent: true
-  }).onOk(async () => {
-    try {
-      const userInfo = getUserInfoFromLocalStorage();
-      if (!userInfo || !userInfo.token) {
-        throw new Error('Anda harus login untuk mengubah status pesanan.');
-      }
-
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${userInfo.token}`,
-        },
-      };
-      const body = { orderStatus: newStatus };
-
-      console.log(`[PurchaseDetail] Sending PUT request to: http://${BE_PRE_URL}/orders/${orderId}/status with body:`, body);
-      await axios.put(`http://${BE_PRE_URL}/orders/${orderId}/status`, body, config);
-
-      $q.notify({
-        type: 'positive',
-        message: `Status pesanan berhasil diubah menjadi "${newStatus}".`,
-        position: 'top',
-        timeout: 2000
-      });
-      fetchPurchaseDetails(); // Muat ulang detail untuk menampilkan perubahan
-    } catch (err) {
-      console.error('Error updating order status:', err);
-      let errorMessage = 'Gagal mengubah status pesanan.';
-      if (err.response && err.response.data && err.response.data.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      $q.notify({
-        type: 'negative',
-        message: errorMessage,
-        position: 'top',
-        timeout: 3000
-      });
-      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-        localStorage.removeItem('userData');
-        localStorage.removeItem('jwt');
-        localStorage.removeItem('token');
-        router.push({ name: 'Login', query: { redirect: route.fullPath } });
-      }
+  }).onOk(() => {
+    // Panggil fungsi aksi yang sesuai
+    if (actionType === 'updateStatus') {
+      actionFunction(purchase.value._id, newStatus);
+    } else {
+      actionFunction(purchase.value._id);
     }
   });
+};
+
+
+const updateOrderStatus = async (orderId, newStatus) => {
+  try {
+    const userInfo = getUserInfoFromLocalStorage();
+    if (!userInfo || !userInfo.token) {
+      throw new Error('Anda harus login untuk mengubah status pesanan.');
+    }
+
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    };
+    const body = { orderStatus: newStatus };
+
+    await axios.put(`http://${BE_PRE_URL}/orders/${orderId}/status`, body, config);
+
+    $q.notify({
+      type: 'positive',
+      message: `Status pesanan berhasil diubah menjadi "${newStatus}".`,
+      position: 'top',
+      timeout: 2000
+    });
+    fetchPurchaseDetails(); // Muat ulang detail untuk menampilkan perubahan
+  } catch (err) {
+    console.error('Error updating order status:', err);
+    let errorMessage = 'Gagal mengubah status pesanan.';
+    if (err.response && err.response.data && err.response.data.message) {
+      errorMessage = err.response.data.message;
+    } else if (err.message) {
+      errorMessage = err.message;
+    }
+    $q.notify({
+      type: 'negative',
+      message: errorMessage,
+      position: 'top',
+      timeout: 3000
+    });
+    if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+      localStorage.removeItem('userData');
+      localStorage.removeItem('jwt');
+      localStorage.removeItem('token');
+      router.push({ name: 'Login', query: { redirect: route.fullPath } });
+    }
+  }
 };
 
 const markOrderAsPaid = async (orderId) => {
-  console.log(`[PurchaseDetail] Attempting to mark order ${orderId} as paid.`);
-
-  $q.dialog({
-    title: 'Konfirmasi Pembayaran',
-    message: `Apakah Anda yakin ingin menandai pesanan ini sebagai sudah dibayar?`,
-    cancel: true,
-    persistent: true
-  }).onOk(async () => {
-    try {
-      const userInfo = getUserInfoFromLocalStorage();
-      if (!userInfo || !userInfo.token) {
-        throw new Error('Anda harus login untuk mengubah status pembayaran.');
-      }
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${userInfo.token}`,
-        },
-      };
-
-      console.log(`[PurchaseDetail] Sending PUT request to: http://${BE_PRE_URL}/orders/${orderId}/pay`);
-      await axios.put(`http://${BE_PRE_URL}/orders/${orderId}/pay`, {}, config);
-
-      $q.notify({
-        type: 'positive',
-        message: `Pesanan berhasil ditandai sebagai sudah dibayar.`,
-        position: 'top',
-        timeout: 2000
-      });
-      fetchPurchaseDetails(); // Muat ulang detail untuk menampilkan perubahan
-    } catch (err) {
-      console.error('Error marking order as paid:', err);
-      let errorMessage = 'Gagal menandai pesanan sebagai sudah dibayar.';
-      if (err.response && err.response.data && err.response.data.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      $q.notify({
-        type: 'negative',
-        message: errorMessage,
-        position: 'top',
-        timeout: 3000
-      });
-      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-        localStorage.removeItem('userData');
-        localStorage.removeItem('jwt');
-        localStorage.removeItem('token');
-        router.push({ name: 'Login', query: { redirect: route.fullPath } });
-      }
+  try {
+    const userInfo = getUserInfoFromLocalStorage();
+    if (!userInfo || !userInfo.token) {
+      throw new Error('Anda harus login untuk mengubah status pembayaran.');
     }
-  });
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    };
+
+    await axios.put(`http://${BE_PRE_URL}/orders/${orderId}/pay`, {}, config);
+
+    $q.notify({
+      type: 'positive',
+      message: `Pesanan berhasil ditandai sebagai sudah dibayar.`,
+      position: 'top',
+      timeout: 2000
+    });
+    fetchPurchaseDetails(); // Muat ulang detail untuk menampilkan perubahan
+  } catch (err) {
+    console.error('Error marking order as paid:', err);
+    let errorMessage = 'Gagal menandai pesanan sebagai sudah dibayar.';
+    if (err.response && err.response.data && err.response.data.message) {
+      errorMessage = err.response.data.message;
+    } else if (err.message) {
+      errorMessage = err.message;
+    }
+    $q.notify({
+      type: 'negative',
+      message: errorMessage,
+      position: 'top',
+      timeout: 3000
+    });
+    if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+      localStorage.removeItem('userData');
+      localStorage.removeItem('jwt');
+      localStorage.removeItem('token');
+      router.push({ name: 'Login', query: { redirect: route.fullPath } });
+    }
+  }
 };
 
 const markOrderAsDelivered = async (orderId) => {
-  console.log(`[PurchaseDetail] Attempting to mark order ${orderId} as delivered.`);
-
-  $q.dialog({
-    title: 'Konfirmasi Pengiriman',
-    message: `Apakah Anda yakin ingin menandai pesanan ini sebagai sudah dikirim?`,
-    cancel: true,
-    persistent: true
-  }).onOk(async () => {
-    try {
-      const userInfo = getUserInfoFromLocalStorage();
-      if (!userInfo || !userInfo.token) {
-        throw new Error('Anda harus login untuk mengubah status pengiriman.');
-      }
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${userInfo.token}`,
-        },
-      };
-
-      console.log(`[PurchaseDetail] Sending PUT request to: http://${BE_PRE_URL}/orders/${orderId}/deliver`);
-      await axios.put(`http://${BE_PRE_URL}/orders/${orderId}/deliver`, {}, config);
-
-      $q.notify({
-        type: 'positive',
-        message: `Pesanan berhasil ditandai sebagai sudah dikirim.`,
-        position: 'top',
-        timeout: 2000
-      });
-      fetchPurchaseDetails(); // Muat ulang detail untuk menampilkan perubahan
-    } catch (err) {
-      console.error('Error marking order as delivered:', err);
-      let errorMessage = 'Gagal menandai pesanan sebagai sudah dikirim.';
-      if (err.response && err.response.data && err.response.data.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      $q.notify({
-        type: 'negative',
-        message: errorMessage,
-        position: 'top',
-        timeout: 3000
-      });
-      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-        localStorage.removeItem('userData');
-        localStorage.removeItem('jwt');
-        localStorage.removeItem('token');
-        router.push({ name: 'Login', query: { redirect: route.fullPath } });
-      }
+  try {
+    const userInfo = getUserInfoFromLocalStorage();
+    if (!userInfo || !userInfo.token) {
+      throw new Error('Anda harus login untuk mengubah status pengiriman.');
     }
-  });
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    };
+
+    await axios.put(`http://${BE_PRE_URL}/orders/${orderId}/deliver`, {}, config);
+
+    $q.notify({
+      type: 'positive',
+      message: `Pesanan berhasil ditandai sebagai sudah dikirim.`,
+      position: 'top',
+      timeout: 2000
+    });
+    fetchPurchaseDetails(); // Muat ulang detail untuk menampilkan perubahan
+  } catch (err) {
+    console.error('Error marking order as delivered:', err);
+    let errorMessage = 'Gagal menandai pesanan sebagai sudah dikirim.';
+    if (err.response && err.response.data && err.response.data.message) {
+      errorMessage = err.response.data.message;
+    } else if (err.message) {
+      errorMessage = err.message;
+    }
+    $q.notify({
+      type: 'negative',
+      message: errorMessage,
+      position: 'top',
+      timeout: 3000
+    });
+    if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+      localStorage.removeItem('userData');
+      localStorage.removeItem('jwt');
+      localStorage.removeItem('token');
+      router.push({ name: 'Login', query: { redirect: route.fullPath } });
+    }
+  }
 };
 
 const formatCurrency = (value) => {
@@ -582,7 +628,6 @@ const formatDate = (dateString, includeTime = true) => {
   return date.toLocaleDateString('id-ID', options);
 };
 
-// Helper function to get status badge color for Quasar
 const getOrderStatusColor = (status) => {
   if (!status) return 'grey-7';
   switch (status.toLowerCase()) {
@@ -599,47 +644,53 @@ const getOrderStatusColor = (status) => {
 };
 
 const getImageUrl = (imagePath) => {
-  const baseUrl = `http://${BE_PRE_URL}`; // Assuming BE_PRE_URL is just the domain:port
-  console.log('[PurchaseDetail] Generating image URL for:', imagePath, 'Base URL used:', baseUrl);
+  if (!imagePath) {
+    return 'https://placehold.co/64x64/E0E0E0/616161?text=No+Image';
+  }
 
-  // If imagePath is already a full URL, use it directly
-  if (imagePath && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
     return imagePath;
   }
 
-  // If imagePath is a relative path, combine with backend base URL
-  const finalImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-  return `${baseUrl}${finalImagePath}`;
+  let baseStaticUrl = '';
+  try {
+    const url = new URL(`http://${BE_PRE_URL}`);
+    baseStaticUrl = url.origin;
+  } catch (e) {
+    console.error("Error parsing BE_PRE_URL for static assets:", e);
+    baseStaticUrl = `http://${BE_PRE_URL.split('/')[0]}`;
+  }
+
+  const normalizedImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  return `${baseStaticUrl}${normalizedImagePath}`;
 };
 
 onMounted(() => {
-  console.log('[PurchaseDetail] Component mounted. Purchase ID from route:', purchaseId.value);
   if (purchaseId.value) {
     fetchPurchaseDetails();
   } else {
     loading.value = false;
-    error.value = 'ID Pembelian tidak ditemukan di URL.'; // Set error message
+    error.value = 'ID Pembelian tidak ditemukan di URL.';
     $q.notify({
       type: 'negative',
       message: 'ID Pembelian tidak ditemukan di URL.',
       position: 'top',
       timeout: 3000
     });
-    router.push({ name: 'UserPurchases' }); // Redirect back to list if ID is missing
+    router.push({ name: 'UserPurchases' });
   }
 });
 </script>
 
 <style scoped>
-/* Custom CSS for borders if Quasar's q-separator is not enough */
 .border-b-grey-3 {
-  border-bottom: 1px solid #e0e0e0; /* Quasar's grey-3 */
+  border-bottom: 1px solid #e0e0e0;
 }
 .border-t-grey-3 {
-  border-top: 1px solid #e0e0e0; /* Quasar's grey-3 */
+  border-top: 1px solid #e0e0e0;
 }
 .border-indigo-3 {
-  border: 1px solid #9FA8DA; /* Quasar's indigo-3 */
+  border: 1px solid #9FA8DA;
 }
 .hover-underline:hover {
   text-decoration: underline;
