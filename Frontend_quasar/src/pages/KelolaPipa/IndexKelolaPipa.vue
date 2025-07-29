@@ -328,13 +328,13 @@ const fetchPipes = async () => {
   error.value = null;
 
   try {
-    const token = localStorage.getItem('jwt'); // Ambil token dari localStorage
+    const token = localStorage.getItem('jwt'); 
     const config = {
       headers: {
-        Authorization: `Bearer ${token}` // Tambahkan token ke header
+        Authorization: `Bearer ${token}` 
       }
     };
-    const response = await axios.get(`http://${BE_PRE_URL}/pipa`, config); // Gunakan config
+    const response = await axios.get(`http://${BE_PRE_URL}/pipa`, config); 
     pipes.value = response.data.data || response.data || [];
     console.log("Fetched pipes:", pipes.value);
   } catch (err) {
@@ -342,7 +342,7 @@ const fetchPipes = async () => {
     let errorMessage = "Gagal memuat data pipa. Silakan coba lagi nanti.";
     if (err.response && err.response.status === 401) {
       errorMessage = "Sesi Anda telah berakhir. Silakan login kembali.";
-      // Redirect ke login jika token tidak valid/expired
+      
       $q.notify({
         type: 'negative',
         message: errorMessage,
@@ -365,14 +365,14 @@ const fetchPipes = async () => {
   }
 };
 
-// Menampilkan modal konfirmasi delete menggunakan Quasar Dialog
+
 const promptDelete = (id, name) => {
   $q.dialog({
     title: 'Hapus Pipa',
     message: `Apakah Anda yakin ingin menghapus pipa **"${name}"**? Tindakan ini tidak dapat dibatalkan.`,
     cancel: true,
     persistent: true,
-    html: true // Penting untuk merender bold markdown
+    html: true 
   }).onOk(() => {
     confirmDelete(id, name);
   }).onCancel(() => {
@@ -385,7 +385,7 @@ const promptDelete = (id, name) => {
   });
 };
 
-// Logika penghapusan setelah konfirmasi
+
 const confirmDelete = async (id, name) => {
   try {
     const token = localStorage.getItem('jwt');
@@ -395,7 +395,7 @@ const confirmDelete = async (id, name) => {
       }
     };
     await axios.delete(`http://${BE_PRE_URL}/pipa/${id}`, config);
-    // Refresh list pipa
+   
     pipes.value = pipes.value.filter(pipe => pipe._id !== id);
     $q.notify({
       type: 'positive',
@@ -427,7 +427,7 @@ const confirmDelete = async (id, name) => {
   }
 };
 
-// Format date
+
 const formatDate = (dateString) => {
   if (!dateString) return '-';
 
@@ -439,7 +439,7 @@ const formatDate = (dateString) => {
   });
 };
 
-// Get status color for Quasar badge
+
 const getStatusColor = (status) => {
   switch (status) {
     case 'Aktif':
@@ -462,28 +462,27 @@ const formatPrice = (value) => {
   }).format(value);
 };
 
-// Ambil data pipa ketika komponen dimuat
 onMounted(() => {
   fetchPipes();
 });
 </script>
 
 <style scoped>
-/* Custom styles */
+
 .hover-bg-grey-1:hover {
-  background-color: #f5f5f5; /* Quasar's grey-1 */
+  background-color: #f5f5f5; 
 }
 
-/* For truncating text in table cells */
+
 .truncate-text {
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* Limit to 2 lines */
+  -webkit-line-clamp: 2; 
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* For truncating text in mobile cards */
+
 .truncate-text-mobile {
   display: -webkit-box;
   -webkit-line-clamp: 3; 

@@ -516,8 +516,8 @@ const getTopSellingProducts = asyncHandler(async (req, res) => {
       },
       {
         $group: {
-          _id: '$orderItems.product',
-          name: { $first: '$orderItems.name' },
+          _id: '$orderItems.name',
+          // name: { $first: '$orderItems.name' },
           totalQuantitySold: { $sum: '$orderItems.quantity' },
         },
       },

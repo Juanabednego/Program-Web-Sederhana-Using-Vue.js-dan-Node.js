@@ -1,4 +1,3 @@
-<!-- src/pages/DashboardAdmin.vue -->
 <template>
   <q-page class="q-pa-md bg-grey-2">
     <div class="q-mx-auto q-px-md q-py-lg" style="max-width: 1200px;">
@@ -53,14 +52,14 @@
         </q-card>
       </div>
 
-      <!-- Placeholder for Orders by Status Chart -->
+      <!-- Placeholder for Orders by Status Chart
       <div class="grid grid-cols-1 q-mb-xl">
         <q-card class="shadow-lg rounded-borders q-pa-md flex flex-center" style="min-height: 400px;">
           <q-card-section>
             <div class="text-h6 text-grey-5">Grafik Pesanan Berdasarkan Status (akan ditambahkan)</div>
           </q-card-section>
         </q-card>
-      </div>
+      </div> -->
 
       <!-- User List Section -->
       <q-card class="shadow-lg rounded-borders q-pa-md">
@@ -391,5 +390,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* No custom styles needed for basic elements as Quasar handles them */
+
 </style>

@@ -1,8 +1,5 @@
-<!-- src/pages/Pemesanan.vue -->
 <template>
-  <!-- Menggunakan q-page sebagai pembungkus utama untuk halaman -->
   <q-page class="q-pa-md bg-grey-2">
-    <!-- Kontainer utama dengan padding dan lebar maksimum -->
     <div class="q-mx-auto q-pa-md" style="max-width: 1200px;">
       <!-- Header -->
       <div class="q-mb-lg flex justify-between items-center">
@@ -56,7 +53,7 @@
             <div class="row justify-between items-start q-col-gutter-md">
               <div class="col-auto">
                 <div class="row items-center q-gutter-x-md">
-                  <div class="text-h6 text-weight-semibold text-grey-9">Order #{{ order._id.slice(-8) }}</div>
+                  <div class="text-h6 text-weight-semibold text-grey-9">ID Pembelian #{{ order._id.slice(-8) }}</div>
                   <q-badge :color="getStatusBadgeColor(order.orderStatus)" class="q-px-sm q-py-xs text-caption text-weight-medium rounded-borders">
                     {{ order.orderStatus }}
                   </q-badge>

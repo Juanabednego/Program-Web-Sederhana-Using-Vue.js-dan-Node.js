@@ -2,7 +2,7 @@
 <template>
   <q-card class="shadow-lg rounded-borders q-pa-md" style="min-height: 450px;">
     <q-card-section>
-      <div class="text-h5 text-weight-bold text-grey-9 q-mb-md text-center">Top 7 Produk Terlaris</div>
+      <div class="text-h5 text-weight-bold text-grey-9 q-mb-md text-center">Produk Terlaris</div>
     </q-card-section>
 
     <!-- Loading State -->
@@ -41,9 +41,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { useQuasar } from 'quasar'; // Import useQuasar untuk notifikasi
+import { useQuasar } from 'quasar'; 
 
-// Pastikan path ini benar di proyek Quasar Anda
 import BE_PRE_URL from 'src/url/index.js';
 
 // Import komponen Bar dari vue-chartjs
@@ -131,7 +130,7 @@ const chartOptions = ref({
       beginAtZero: true, // Mulai sumbu Y dari nol
       title: {
         display: true,
-        text: 'Jumlah Kuantitas', // Label sumbu Y
+        text: 'Jumlah', // Label sumbu Y
         font: {
           size: 14,
           weight: 'bold'
@@ -197,7 +196,7 @@ const fetchTopProducts = async () => {
     } else {
       chartData.value.labels = [];
       chartData.value.datasets[0].data = [];
-    }
+    } 
 
   } catch (error) {
     console.error('Gagal mengambil data produk terlaris:', error);
@@ -206,8 +205,7 @@ const fetchTopProducts = async () => {
       errorMessage = `Gagal memuat data: ${error.response.status} - ${error.response.data.message || error.message}`;
       if (error.response.status === 401 || error.response.status === 403) {
         errorMessage = 'Anda tidak memiliki izin untuk melihat data ini. Silakan login ulang.';
-        // Optional: Redirect to login if unauthorized
-        // router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } });
+        
       }
     } else if (error.request) {
       errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi backend Anda.';

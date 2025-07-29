@@ -1,4 +1,3 @@
-<!-- src/pages/Checkout.vue -->
 <template>
   <!-- Loading state for initial login check -->
   <q-page v-if="isCheckingLogin" class="flex flex-center bg-grey-2">
@@ -41,12 +40,12 @@
                   lazy-rules
                   :rules="[val => (val && val.length > 0) || 'Alamat tidak boleh kosong']"
                 />
-                <div class="row q-col-gutter-md">
+                <div>
                   <div class="col-12 col-sm-6">
                     <q-input
                       filled
                       v-model="shippingAddress.city"
-                      label="Kota"
+                      label="Kota"  
                       lazy-rules
                       :rules="[val => (val && val.length > 0) || 'Kota tidak boleh kosong']"
                     />
@@ -93,13 +92,13 @@
 
                 <q-banner v-if="paymentMethod" class="bg-blue-1 text-blue-8 q-pa-md rounded-borders q-mt-md">
                   <template v-if="paymentMethod === 'Transfer Bank'">
-                    Silakan transfer ke <strong>BCA 123456789</strong>
+                    Silakan transfer ke <strong>BRI - 382901027786533</strong>
                   </template>
                   <template v-else-if="paymentMethod === 'Dana'">
-                    Kirim pembayaran ke <strong>0812-3456-7890</strong>
+                    Kirim pembayaran ke <strong>0831-1459-6027</strong>
                   </template>
                   <template v-else-if="paymentMethod === 'OVO'">
-                    Kirim pembayaran ke <strong>0812-9876-5432</strong>
+                    Kirim pembayaran ke <strong>0831-1459-6027</strong>
                   </template>
                   <p class="q-mt-sm text-caption">Anda akan menerima email invoice dengan instruksi pembayaran dan link untuk mengunggah bukti transfer.</p>
                 </q-banner>
@@ -138,27 +137,27 @@
                     <q-item-label>{{ item.product.name }} x{{ item.quantity }}</q-item-label>
                   </q-item-section>
                   <q-item-section side>
-                    <q-item-label>Rp {{ formatCurrency(item.product.price * item.quantity) }}</q-item-label>
+                    <q-item-label> {{ formatCurrency(item.product.price * item.quantity) }}</q-item-label>
                   </q-item-section>
                 </q-item>
               </q-list>
               <q-separator class="q-my-md" />
               <div class="row justify-between q-mb-sm">
-                <span class="text-body1 text-grey-8">Subtotal Barang</span>
-                <span class="text-body1 text-weight-medium text-grey-9">Rp {{ formatCurrency(cartStore.cartSubtotal) }}</span>
+                <span class="text-body1 text-grey-8">Subtotal</span>
+                <span class="text-body1 text-weight-medium text-grey-9"> {{ formatCurrency(cartStore.cartSubtotal) }}</span>
               </div>
               <div class="row justify-between q-mb-sm">
                 <span class="text-body1 text-grey-8">Pajak ({{ (taxRate * 100) }}%)</span>
-                <span class="text-body1 text-weight-medium text-grey-9">Rp {{ formatCurrency(taxPrice) }}</span>
+                <span class="text-body1 text-weight-medium text-grey-9"> {{ formatCurrency(taxPrice) }}</span>
               </div>
               <div class="row justify-between q-mb-md">
                 <span class="text-body1 text-grey-8">Ongkir</span>
-                <span class="text-body1 text-weight-medium text-grey-9">Rp {{ formatCurrency(shippingPrice) }}</span>
+                <span class="text-body1 text-weight-medium text-grey-9"> {{ formatCurrency(shippingPrice) }}</span>
               </div>
               <q-separator class="q-my-md" />
               <div class="row justify-between text-h5 text-weight-bold text-blue-8 q-mt-md">
                 <span>Total Pembayaran</span>
-                <span>Rp {{ formatCurrency(totalPrice) }}</span>
+                <span> {{ formatCurrency(totalPrice) }}</span>
               </div>
             </q-card-section>
           </q-card>
@@ -170,26 +169,25 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useCartStore } from 'src/stores/cart'; // Pastikan path ini benar
+import { useCartStore } from 'src/stores/cart'; 
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import { useQuasar } from 'quasar'; // Import useQuasar untuk notifikasi dan dialog
+import { useQuasar } from 'quasar'; 
 
-// Pastikan file src/url/index.js Anda mengekspor BE_PRE_URL sebagai default export.
+
 import BE_PRE_URL from 'src/url/index.js';
 
 const router = useRouter();
 const cartStore = useCartStore();
-const $q = useQuasar(); // Inisialisasi Quasar instance
-
+const $q = useQuasar();
 const shippingAddress = ref({ address: '', city: '', postalCode: '', country: 'Indonesia' });
-const paymentMethod = ref('Transfer Bank'); // Default value
+const paymentMethod = ref('Transfer Bank'); 
 const agreedToTerms = ref(false);
 const loading = ref(false);
 const error = ref(null);
 
 const shippingPrice = ref(10000);
-const taxRate = ref(0.10);
+const taxRate = ref(0.11);
 
 const isCheckingLogin = ref(true);
 const userInfo = ref(null);
@@ -253,7 +251,7 @@ onMounted(() => {
       position: 'top',
       timeout: 3000
     });
-    router.push('/home'); // Mengarahkan ke /home (Produk Pipa)
+    router.push('/home'); 
     return;
   }
 
@@ -282,9 +280,8 @@ const submitOrder = async () => {
     router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } });
     return;
   }
-
-  // Validasi form Quasar akan menangani ini secara otomatis dengan lazy-rules dan rules
-  // Namun, kita bisa menambahkan notifikasi Quasar jika error terjadi secara manual
+  
+  
   if (!shippingAddress.value.address || !shippingAddress.value.city || !shippingAddress.value.postalCode || !shippingAddress.value.country) {
     error.value = 'Mohon lengkapi semua informasi pengiriman.';
     $q.notify({
@@ -346,7 +343,7 @@ const submitOrder = async () => {
         name: item.product.name,
         quantity: item.quantity,
         price: item.product.price,
-        image: item.product.imageUrl || '', // Pastikan menggunakan imageUrl dari produk
+        image: item.product.imageUrl || '',
       })),
     };
 
@@ -371,9 +368,9 @@ const submitOrder = async () => {
       position: 'top',
       timeout: 5000
     });
-    // FIX: Mengubah `query` menjadi `params` sesuai definisi rute di `routes.js`
+   
     router.push({ name: 'orderConfirmation', params: { orderId: data._id } });
-    // window.location.reload(); // Opsional, jika Anda ingin reload penuh
+    
   } catch (err) {
     console.error('[CheckoutView] Gagal submit pesanan:', err);
     let errorMessage = 'Terjadi kesalahan tidak terduga saat membuat pesanan.';
@@ -411,5 +408,7 @@ const formatCurrency = (amount) => {
 </script>
 
 <style scoped>
-/* Custom CSS jika diperlukan, sebagian besar styling ditangani oleh Quasar */
+
 </style>
+
+

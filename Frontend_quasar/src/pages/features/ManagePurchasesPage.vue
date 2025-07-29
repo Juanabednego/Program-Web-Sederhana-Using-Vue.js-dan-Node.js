@@ -1,9 +1,8 @@
-<!-- src/pages/ManagePurchasesPage.vue -->
 <template>
   <q-page class="q-pa-md bg-grey-2">
     <div class="q-mx-auto q-px-md q-py-lg" style="max-width: 1200px;">
       <div class="flex items-center justify-between q-mb-lg">
-        <div class="text-h4 text-weight-bold text-grey-9">Daftar Pembelian (Orders)</div>
+        <div class="text-h4 text-weight-bold text-grey-9">Daftar Pembelian</div>
         <div class="flex q-gutter-sm">
           <q-btn
             @click="fetchPurchases"

@@ -1,4 +1,3 @@
-<!-- src/pages/OrderConfirmationView.vue -->
 <template>
   <!-- q-page sebagai pembungkus utama untuk halaman, dengan utilitas flexbox Quasar -->
   <q-page class="q-pa-md bg-grey-2">
@@ -34,55 +33,80 @@
         <q-card class="q-pa-md shadow-lg rounded-borders q-mx-auto text-left">
           <q-card-section>
             <div class="text-h5 text-weight-semibold q-pb-sm q-mb-sm border-b-grey-3">Detail Pesanan #{{ order._id.slice(-8) }}</div>
-            <p class="text-body2 q-mb-xs"><strong>Tanggal Pesanan:</strong> {{ formatDate(order.createdAt) }}</p>
-            <p class="text-body2 q-mb-xs"><strong>Status Pembayaran:</strong>
-              <q-badge :color="order.isPaid ? 'positive' : 'orange-8'" class="q-px-sm q-py-xs text-caption text-weight-medium rounded-borders">
-                {{ order.isPaid ? `Sudah Dibayar ${order.paidAt ? 'pada ' + formatDate(order.paidAt, true) : ''}` : 'Menunggu Verifikasi' }}
-              </q-badge>
-            </p>
-            <p class="text-body2 q-mb-xs"><strong>Status Pesanan:</strong>
-              <q-badge :color="getOrderStatusColor(order.orderStatus)" class="q-px-sm q-py-xs text-caption text-weight-medium rounded-borders">
-                {{ order.orderStatus }}
-              </q-badge>
-            </p>
-            <p class="text-body2 q-mb-xs"><strong>Status Pengiriman:</strong>
-              <q-badge :color="order.isDelivered ? 'positive' : 'orange-8'" class="q-px-sm q-py-xs text-caption text-weight-medium rounded-borders">
-                {{ order.isDelivered ? `Sudah Dikirim ${order.deliveredAt ? 'pada ' + formatDate(order.deliveredAt, true) : ''}` : 'Belum Dikirim' }}
-              </q-badge>
-            </p>
+
+            <!-- Menggunakan row dan col untuk alignment yang konsisten -->
+            <div class="row q-col-gutter-x-md q-mb-xs items-center">
+              <div class="col-auto text-body2 text-weight-bold" style="min-width: 180px;">Tanggal Pesanan:</div>
+              <div class="col text-body2">{{ formatDate(order.createdAt) }}</div>
+            </div>
+            <div class="row q-col-gutter-x-md q-mb-xs items-center">
+              <div class="col-auto text-body2 text-weight-bold" style="min-width: 180px;">Status Pembayaran:</div>
+              <div class="col text-body2">
+                {{ order.isPaid ? 'Sudah Dibayar' + (order.paidAt ? ` (${formatDate(order.paidAt, true)})` : '') : 'Menunggu Verifikasi' }}
+              </div>
+            </div>
+            <div class="row q-col-gutter-x-md q-mb-xs items-center">
+              <div class="col-auto text-body2 text-weight-bold" style="min-width: 180px;">Status Pesanan:</div>
+              <div class="col text-body2">{{ order.orderStatus }}</div>
+            </div>
+            <div class="row q-col-gutter-x-md q-mb-xs items-center">
+              <div class="col-auto text-body2 text-weight-bold" style="min-width: 180px;">Status Pengiriman:</div>
+              <div class="col text-body2">
+                {{ order.isDelivered ? 'Sudah Dikirim' + (order.deliveredAt ? ` (${formatDate(order.deliveredAt, true)})` : '') : 'Belum Dikirim' }}
+              </div>
+            </div>
           </q-card-section>
 
           <q-separator inset />
 
           <q-card-section>
             <div class="text-h6 text-weight-semibold q-pb-sm q-mb-sm border-b-grey-3">Alamat Pengiriman</div>
-            <p class="text-body2 text-grey-7">{{ order.shippingAddress.address }}</p>
-            <p class="text-body2 text-grey-7">{{ order.shippingAddress.city }}, {{ order.shippingAddress.postalCode }}</p>
-            <p class="text-body2 text-grey-7">{{ order.shippingAddress.country }}</p>
+            <!-- Menggunakan row dan col untuk alignment alamat -->
+            <div class="row q-col-gutter-x-md q-mb-xs items-center">
+             
+              <div class="col text-body2 text-grey-7">{{ order.shippingAddress.address }}</div>
+            </div>
+            <div class="row q-col-gutter-x-md q-mb-xs items-center">
+             
+              <div class="col text-body2 text-grey-7">{{ order.shippingAddress.city }}, {{ order.shippingAddress.postalCode }}</div>
+            </div>
+            <div class="row q-col-gutter-x-md q-mb-xs items-center">
+            
+              <div class="col text-body2 text-grey-7">{{ order.shippingAddress.country }}</div>
+            </div>
           </q-card-section>
 
           <q-separator inset />
 
           <q-card-section>
             <div class="text-h6 text-weight-semibold q-pb-sm q-mb-sm border-b-grey-3">Metode Pembayaran</div>
-            <p class="text-body2 text-grey-7">{{ order.paymentMethod }}</p>
+            <!-- Menggunakan row dan col untuk alignment metode pembayaran -->
+            <div class="row q-col-gutter-x-md q-mb-xs items-center">
+              <div class="col-auto text-body2 text-weight-bold" style="min-width: 180px;">Metode Pembayaran:</div>
+              <div class="col text-body2 text-grey-7">{{ order.paymentMethod }}</div>
+            </div>
             <div v-if="order.proofOfTransfer" class="q-mt-md">
-                <p class="text-body2 text-weight-semibold text-grey-8 q-mb-sm">Bukti Transfer / Pembayaran:</p>
-                <a :href="getImageUrl(order.proofOfTransfer)" target="_blank" class="text-blue-8 hover-underline">
-                    <q-img :src="getImageUrl(order.proofOfTransfer)" alt="Bukti Pembayaran"
-                           class="rounded-borders shadow-1"
-                           style="max-width: 250px; height: auto; object-fit: cover;"
-                           no-native-menu
-                    >
-                      <template v-slot:error>
-                        <div class="absolute-full flex flex-center bg-negative text-white">
-                          Gagal memuat gambar
-                        </div>
-                      </template>
-                    </q-img>
-                    <p class="text-caption q-mt-xs">Klik untuk melihat gambar penuh</p>
-                </a>
-                <p class="text-caption q-mt-sm text-grey-7 italic">Pembayaran Anda sedang dalam proses verifikasi.</p>
+                <!-- Menggunakan row dan col untuk alignment bukti transfer -->
+                <div class="row q-col-gutter-x-md q-mb-sm items-start">
+                    <div class="col-auto text-body2 text-weight-semibold text-grey-8" style="min-width: 180px;">Bukti Transfer / Pembayaran:</div>
+                    <div class="col">
+                        <a :href="getImageUrl(order.proofOfTransfer)" target="_blank" class="text-blue-8 hover-underline">
+                            <q-img :src="getImageUrl(order.proofOfTransfer)" alt="Bukti Pembayaran"
+                                   class="rounded-borders shadow-1"
+                                   style="max-width: 250px; height: auto; object-fit: cover;"
+                                   no-native-menu
+                            >
+                              <template v-slot:error>
+                                <div class="absolute-full flex flex-center bg-negative text-white">
+                                  Gagal memuat gambar
+                                </div>
+                              </template>
+                            </q-img>
+                            <p class="text-caption q-mt-xs">Klik untuk melihat gambar penuh</p>
+                        </a>
+                        <p class="text-caption q-mt-sm text-grey-7 italic">Pembayaran Anda sedang dalam proses verifikasi.</p>
+                    </div>
+                </div>
             </div>
             <div v-else class="q-mt-md text-grey-7 italic">
                 Tidak ada bukti pembayaran terunggah untuk metode ini.
@@ -114,7 +138,7 @@
                   <q-item-label caption class="text-body2 text-grey-6">Jumlah: {{ item.quantity }} x Rp {{ formatCurrency(item.price) }}</q-item-label>
                 </q-item-section>
                 <q-item-section side>
-                  <q-item-label class="text-body1 text-weight-bold text-grey-9">Rp {{ formatCurrency(item.quantity * item.price) }}</q-item-label>
+                  <q-item-label class="text-body1 text-weight-bold text-grey-9">{{ formatCurrency(item.quantity * item.price) }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -123,22 +147,23 @@
           <q-separator inset />
 
           <q-card-section class="q-mt-sm q-pt-md q-pb-sm border-t-grey-3">
-            <div class="row justify-between items-center text-body1 q-mb-xs">
-              <span>Subtotal Barang:</span>
-              <span class="text-weight-bold">Rp {{ formatCurrency(order.itemsPrice) }}</span>
+            <!-- Menggunakan row dan col untuk alignment ringkasan total -->
+            <div class="row q-col-gutter-x-md items-center text-body1 q-mb-xs">
+              <div class="col-auto" style="min-width: 180px;">Subtotal Barang:</div>
+              <div class="col text-right text-weight-bold"> {{ formatCurrency(order.itemsPrice) }}</div>
             </div>
-            <div class="row justify-between items-center text-body1 q-mb-xs">
-              <span>Ongkos Kirim:</span>
-              <span class="text-weight-bold">Rp {{ formatCurrency(order.shippingPrice) }}</span>
+            <div class="row q-col-gutter-x-md items-center text-body1 q-mb-xs">
+              <div class="col-auto" style="min-width: 180px;">Ongkos Kirim:</div>
+              <div class="col text-right text-weight-bold"> {{ formatCurrency(order.shippingPrice) }}</div>
             </div>
-            <div class="row justify-between items-center text-body1 q-mb-md">
-              <span>Pajak:</span>
-              <span class="text-weight-bold">Rp {{ formatCurrency(order.taxPrice) }}</span>
+            <div class="row q-col-gutter-x-md items-center text-body1 q-mb-md">
+              <div class="col-auto" style="min-width: 180px;">Pajak:</div>
+              <div class="col text-right text-weight-bold"> {{ formatCurrency(order.taxPrice) }}</div>
             </div>
             <q-separator spaced="sm" />
-            <div class="row justify-between items-center text-h5 text-weight-bold text-blue-8 q-mt-md">
-              <span>Total Pembayaran:</span>
-              <span>Rp {{ formatCurrency(order.totalPrice) }}</span>
+            <div class="row q-col-gutter-x-md items-center text-h5 text-weight-bold text-blue-8 q-mt-md">
+              <div class="col-auto" style="min-width: 180px;">Total Pembayaran:</div>
+              <div class="col text-right"> {{ formatCurrency(order.totalPrice) }}</div>
             </div>
           </q-card-section>
 
@@ -150,8 +175,8 @@
               </template>
               <div class="text-body1 text-weight-semibold q-mb-sm">Batalkan Pesanan</div>
               <div class="text-body2 text-yellow-7 q-mb-md">
-                Anda masih dapat membatalkan pesanan ini karena statusnya adalah "{{ order.orderStatus }}".
-                Setelah dibatalkan, pesanan tidak dapat dikembalikan.
+                Anda masih dapat membatalkan pesanan ini karena status pemesanan nya adalah "{{ order.orderStatus }}".
+                Setelah dibatalkan, pesanan tidak dapat dipulihkan atau dilanjutkan.
               </div>
               <template v-slot:action>
                 <q-btn
@@ -256,8 +281,8 @@ function getUserInfoFromLocalStorage() {
   const user = localStorage.getItem('userData');
   const token = getTokenFromLocalStorage();
   console.log('[OrderConfirmation] Attempting to get user info from localStorage...');
-  console.log('   userData found:', !!user);
-  console.log('   jwt token found:', !!token);
+  console.log('    userData found:', !!user);
+  console.log('    jwt token found:', !!token);
 
   if (!user || !token) {
     console.warn('[OrderConfirmation] User data or JWT token is missing in localStorage. User needs to login.');
@@ -461,7 +486,7 @@ const getImageUrl = (imagePath) => {
   return `${baseUrl}${finalImagePath}`;
 };
 
-// Helper function untuk mendapatkan warna badge status
+// Helper function untuk mendapatkan warna badge status (tidak digunakan lagi untuk tampilan, tapi bisa tetap ada untuk logika lain)
 const getOrderStatusColor = (status) => {
   switch (status) {
     case 'Pending Payment': return 'yellow-8';

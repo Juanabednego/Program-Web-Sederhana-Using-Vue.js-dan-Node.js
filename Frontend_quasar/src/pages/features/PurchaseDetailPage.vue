@@ -12,7 +12,7 @@
           unelevated
           class="q-mr-md q-px-md q-py-sm"
         />
-        <div class="text-h4 text-weight-bold text-grey-9">Detail Pembelian (ID: {{ purchaseId.slice(-8) }})</div>
+        <div class="text-h4 text-weight-bold text-grey-9">Detail Pembelian </div>
       </div>
 
       <!-- Loading State -->
@@ -233,16 +233,16 @@
 
         <q-card-section class="q-mt-md q-pt-md q-pb-sm border-t-grey-3">
           <div class="row justify-between items-center text-body1 q-mb-xs">
-            <span>Subtotal Barang:</span>
-            <span class="text-weight-bold">Rp {{ formatCurrency(purchase.itemsPrice) }}</span>
+            <span>Subtotal:</span>
+            <span class="text-weight-bold"> {{ formatCurrency(purchase.itemsPrice) }}</span>
           </div>
           <div class="row justify-between items-center text-body1 q-mb-xs">
             <span>Ongkos Kirim:</span>
-            <span class="text-weight-bold">Rp {{ formatCurrency(purchase.shippingPrice) }}</span>
+            <span class="text-weight-bold"> {{ formatCurrency(purchase.shippingPrice) }}</span>
           </div>
           <div class="row justify-between items-center text-body1 q-mb-md">
             <span>Pajak:</span>
-            <span class="text-weight-bold">Rp {{ formatCurrency(purchase.taxPrice) }}</span>
+            <span class="text-weight-bold"> {{ formatCurrency(purchase.taxPrice) }}</span>
           </div>
           <q-separator spaced="sm" />
           <div class="row justify-between items-center text-h5 text-weight-bold text-blue-8 q-mt-md">

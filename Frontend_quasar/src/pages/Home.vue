@@ -458,17 +458,17 @@ onMounted(() => {
 
 .animate-scale-in {
   animation: scaleIn 0.4s ease-out forwards;
-  /* Add staggered delay for each card if desired, e.g., using v-for index */
+  
 }
 
-/* Hero Chips */
+
 .hero-chip {
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .hero-chip:hover {
-  transform: translateY(-3px); /* Lift effect on hover */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
 }
 
 /* Stat Cards */
@@ -477,12 +477,12 @@ onMounted(() => {
 }
 
 .stat-card:hover {
-  transform: translateY(-5px); /* Lift effect */
+  transform: translateY(-5px); 
 }
 
 /* Filter Card */
 .filter-card {
-  border: 1px solid var(--q-color-grey-3); /* Subtle border */
+  border: 1px solid var(--q-color-grey-3); 
 }
 
 /* Product Cards */
@@ -491,33 +491,33 @@ onMounted(() => {
 }
 
 .product-card:hover {
-  transform: translateY(-8px); /* More pronounced lift */
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow */
+  transform: translateY(-8px); 
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 .product-image {
-  height: 180px; /* Consistent image height */
-  width: 100%; /* Ensure it fills the width */
+  height: 180px; 
+  width: 100%;
   object-fit: cover;
 }
 
 .product-name-clamp {
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* Limit to 2 lines */
+  -webkit-line-clamp: 2; 
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 50px; /* Ensure consistent height for names */
+  min-height: 50px; 
   line-height: 1.3;
 }
 
 .description-clamp {
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* Limit to 3 lines for description */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 60px; /* Ensure consistent height */
+  min-height: 60px; 
   line-height: 1.4;
 }
 </style>

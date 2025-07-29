@@ -40,7 +40,7 @@
             <q-item-section>
               <q-item-label class="text-h6 text-weight-semibold">{{ item.product.name }}</q-item-label>
               <q-item-label caption class="text-body2 text-grey-7">
-                Rp {{ formatCurrency(item.product.price) }} /meter
+                {{ formatCurrency(item.product.price) }} /meter
               </q-item-label>
               <q-item-label caption class="text-body2 text-grey-6">
                 Diameter: {{ item.product.diameter }}, Panjang: {{ item.product.length }}, Material: {{ item.product.material }}
@@ -70,7 +70,7 @@
                 />
               </div>
               <div class="text-body1 text-weight-bold text-right q-mt-sm">
-                Rp {{ formatCurrency(item.product.price * item.quantity) }}
+                {{ formatCurrency(item.product.price * item.quantity) }}
               </div>
             </q-item-section>
 
@@ -90,8 +90,8 @@
         <!-- Cart Summary -->
         <q-card class="shadow-2 rounded-borders q-pa-md bg-blue-1">
           <div class="row justify-between items-center">
-            <div class="text-h6 text-weight-semibold text-blue-grey-10">Subtotal Barang:</div>
-            <div class="text-h5 text-weight-bold text-blue-grey-10">Rp {{ formatCurrency(cartStore.cartSubtotal) }}</div>
+            <div class="text-h6 text-weight-semibold text-blue-grey-10">Subtotal:</div>
+            <div class="text-h5 text-weight-bold text-blue-grey-10"> {{ formatCurrency(cartStore.cartSubtotal) }}</div>
           </div>
         </q-card>
 
