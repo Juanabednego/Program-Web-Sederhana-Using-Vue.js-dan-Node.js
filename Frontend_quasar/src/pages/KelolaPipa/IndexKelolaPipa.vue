@@ -1,21 +1,18 @@
-<!-- src/pages/ManagePipes.vue -->
 <template>
   <q-page class="q-pa-md bg-grey-2">
     <div class="q-mx-auto q-px-md q-py-lg" style="max-width: 1200px;">
       <div class="q-mb-lg">
         <div class="text-h4 text-weight-bold text-grey-9 q-mb-sm">Kelola Pipa</div>
         <p class="text-body1 text-grey-7">Manajemen data pipa untuk sistem distribusi</p>
-      </div>
-
-      <!-- Loading State -->
+      </div>  
+   
       <div v-if="loading" class="flex flex-center q-py-xl">
         <div class="flex flex-col items-center">
           <q-spinner-dots color="primary" size="3em" class="q-mb-md" />
           <p class="text-h6 text-grey-7">Memuat data pipa...</p>
         </div>
       </div>
-
-      <!-- Error State -->
+  
       <q-banner v-else-if="error" class="bg-red-1 text-red-8 q-mb-lg rounded-borders q-mx-auto">
         <template v-slot:avatar>
           <q-icon name="error" color="red-4" />
@@ -30,8 +27,7 @@
           />
         </template>
       </q-banner>
-
-      <!-- Main Content when data is loaded -->
+     
       <div v-else>
         <div class="q-mb-lg flex flex-col sm:flex-row sm:items-center sm:justify-between q-gutter-md">
           <div class="flex items-center">
@@ -57,8 +53,7 @@
             />
           </div>
         </div>
-
-        <!-- Desktop Table View -->
+            
         <div class="gt-sm">
           <q-card class="shadow-2 rounded-borders overflow-hidden">
             <q-table
@@ -67,14 +62,14 @@
               row-key="_id"
               hide-bottom
               flat
-               virtual-scroll
-  :virtual-scroll-item-size="72"   
-  :rows-per-page-options="[0]"
-  :pagination="{
-    page: 1,
-    rowsPerPage: 0
-  }"
-  style="max-height: 500px; overflow-y: auto;"
+              virtual-scroll
+              :virtual-scroll-item-size="72"   
+              :rows-per-page-options="[0]"
+              :pagination="{
+                page: 1,
+                rowsPerPage: 0
+              }"
+              style="max-height: 500px; overflow-y: auto;"
             >
               <template v-slot:header="props">
                 <q-tr :props="props" class="bg-grey-1">
@@ -93,8 +88,8 @@
                              :alt="props.row.pipeName"
                              class="rounded-borders q-mr-md"
                              style="height: 64px; width: 64px; object-fit: cover;"
-                             no-native-menu
-                      >
+                             no-native-menu>
+
                         <template v-slot:error>
                           <div class="absolute-full flex flex-center bg-negative text-white">
                             Gagal memuat gambar
@@ -170,7 +165,7 @@
           </q-card>
         </div>
 
-        <!-- Mobile Card View -->
+      
         <div class="lt-md">
           <div class="q-gutter-md">
             <q-card v-for="pipe in pipes" :key="pipe._id" class="shadow-2 rounded-borders">
@@ -269,7 +264,7 @@
           </div>
         </div>
 
-        <!-- No Data State -->
+       
         <div v-if="!loading && !error && pipes.length === 0" class="text-center q-py-xl">
           <q-icon name="category" size="xl" color="grey-4" class="q-mb-md" />
           <div class="text-h6 text-grey-7 q-mb-sm">Tidak ada data pipa</div>
@@ -292,19 +287,17 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar'; // Import useQuasar untuk notifikasi dan dialog
+import { useQuasar } from 'quasar'; 
 
-// Pastikan path ini benar di proyek Quasar Anda
 import BE_PRE_URL from 'src/url/index.js';
 
 const router = useRouter();
-const $q = useQuasar(); // Inisialisasi Quasar instance
+const $q = useQuasar(); 
 
 const loading = ref(true);
 const error = ref(null);
 const pipes = ref([]);
 
-// QTable columns definition
 const columns = [
   {
     name: 'pipe',
@@ -322,7 +315,7 @@ const columns = [
   { name: 'actions', label: 'Aksi', align: 'right' }
 ];
 
-// Fetch Pipa Data
+
 const fetchPipes = async () => {
   loading.value = true;
   error.value = null;

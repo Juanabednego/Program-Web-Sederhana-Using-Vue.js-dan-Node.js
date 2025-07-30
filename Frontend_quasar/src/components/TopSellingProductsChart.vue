@@ -1,4 +1,3 @@
-<!-- src/components/TopSellingProductsChart.vue -->
 <template>
   <q-card class="shadow-lg rounded-borders q-pa-md" style="min-height: 450px;">
     <q-card-section>
@@ -45,10 +44,10 @@ import { useQuasar } from 'quasar';
 
 import BE_PRE_URL from 'src/url/index.js';
 
-// Import komponen Bar dari vue-chartjs
+
 import { Bar } from 'vue-chartjs';
 
-// Import dan daftarkan elemen-elemen Chart.js yang dibutuhkan
+
 import {
   Chart as ChartJS,
   Title,
@@ -61,27 +60,27 @@ import {
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
-const $q = useQuasar(); // Inisialisasi Quasar instance
+const $q = useQuasar(); 
 
 const chartData = ref({
-  labels: [], // Akan diisi dengan nama produk
+  labels: [], 
   datasets: [
     {
-      label: 'Total Kuantitas Terjual', // Label untuk legend dan tooltip
-      backgroundColor: '#2196F3', // Warna batang biru Quasar primary
+      label: 'Total Terjual', 
+      backgroundColor: '#2196F3', 
       borderColor: '#2196F3',
       borderWidth: 1,
-      data: [] // Akan diisi dengan kuantitas terjual
+      data: [] 
     }
   ]
 });
 
 const chartOptions = ref({
   responsive: true,
-  maintainAspectRatio: false, // Penting agar tinggi dan lebar bisa dikontrol oleh CSS
+  maintainAspectRatio: false, 
   plugins: {
     legend: {
-      display: true, // Tampilkan legend
+      display: true, 
       position: 'top',
       labels: {
         font: {

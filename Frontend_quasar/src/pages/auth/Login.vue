@@ -1,16 +1,13 @@
-<!-- src/pages/auth/Login.vue -->
 <template>
-  <!-- q-page sebagai pembungkus utama untuk halaman, dengan utilitas flexbox Quasar -->
   <q-page class="flex flex-center bg-grey-2">
-    <!-- q-card sebagai pengganti div dengan shadow dan rounded-lg -->
     <q-card class="q-pa-md shadow-2 my_card" style="width: 100%; max-width: 400px;">
       <q-card-section>
         <div class="text-h6 text-center text-grey-8 q-mb-md">Login</div>
       </q-card-section>
 
-      <!-- q-form sebagai pengganti form HTML -->
+
       <q-form @submit.prevent="handleLogin" class="q-gutter-md">
-        <!-- q-input sebagai pengganti input HTML untuk username -->
+      
         <q-input
           filled
           v-model="username"
@@ -23,7 +20,7 @@
           </template>
         </q-input>
 
-        <!-- q-input sebagai pengganti input HTML untuk password -->
+       
         <q-input
           filled
           v-model="password"
@@ -37,13 +34,13 @@
           </template>
         </q-input>
 
-        <!-- Menampilkan error message menggunakan q-banner atau div sederhana -->
+       
         <div v-if="errorMessage" class="text-red-7 text-center q-mt-sm">
           {{ errorMessage }}
         </div>
 
         <div class="q-mt-md">
-          <!-- q-btn sebagai pengganti button HTML untuk Login -->
+       
           <q-btn
             label="Login"
             type="submit"
@@ -53,7 +50,7 @@
             :disable="isLoading"
           />
 
-          <!-- q-btn sebagai pengganti button HTML untuk Registrasi -->
+        
           <q-btn
             label="Registrasi"
             type="button"
@@ -72,12 +69,8 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar'; // Import useQuasar untuk notifikasi
+import { useQuasar } from 'quasar'; 
 
-// Pastikan file src/url/index.js Anda mengekspor BE_PRE_URL sebagai default export.
-// Contoh isi src/url/index.js:
-// const BE_PRE_URL = 'localhost:3000'; // Ganti dengan URL backend Anda yang sebenarnya
-// export default BE_PRE_URL;
 import BE_PRE_URL from 'src/url/index.js';
 
 const username = ref('');
@@ -85,7 +78,7 @@ const password = ref('');
 const isLoading = ref(false);
 const errorMessage = ref('');
 const router = useRouter();
-const $q = useQuasar(); // Inisialisasi Quasar instance untuk notifikasi
+const $q = useQuasar(); 
 
 const handleLogin = async () => {
   isLoading.value = true;
@@ -109,7 +102,7 @@ const handleLogin = async () => {
       localStorage.removeItem('logout');
     }
 
-    // Tampilkan notifikasi sukses
+    
     $q.notify({
       type: 'positive',
       message: 'Login berhasil!',
@@ -117,16 +110,16 @@ const handleLogin = async () => {
       timeout: 2000
     });
 
-    // Navigasi berdasarkan role
+   
     if (role === 'admin') {
       router.push('/dashboard');
-      window.location.reload(); // Refresh paksa setelah login admin (sesuai kode asli)
+      window.location.reload(); 
     } else if (role === 'customer') {
-      router.push('/home'); // Navigasi ke halaman customer
-      window.location.reload(); // Refresh paksa setelah login customer (sesuai kode asli)
+      router.push('/home'); 
+      window.location.reload(); 
     }
   } catch (error) {
-    isLoading.value = false; // Pastikan isLoading diatur kembali di sini juga
+    isLoading.value = false; 
 
     let message = 'Terjadi kesalahan saat login.';
     if (error.response && error.response.data && error.response.data.message) {
@@ -135,7 +128,7 @@ const handleLogin = async () => {
       message = error.message;
     }
 
-    errorMessage.value = message; // Tetap simpan di errorMessage untuk tampilan di bawah form
+    errorMessage.value = message;
     $q.notify({
       type: 'negative',
       message: message,
@@ -153,9 +146,8 @@ const goToRegister = () => {
 </script>
 
 <style scoped>
-/* Anda bisa menambahkan gaya kustom di sini jika diperlukan,
-   tapi sebagian besar styling sudah ditangani oleh kelas utilitas Quasar. */
+
 .my_card {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Replikasi shadow-lg Tailwind */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); 
 }
 </style>
