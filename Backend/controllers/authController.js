@@ -10,7 +10,6 @@ const signToken = id => {
 
 const createSendResToken = (user, statusCode, res) => {
     const token = signToken(user._id);
-    // const isDev = process.env.NODE_ENV === 'development' ? false : true;
     const isDev = false;
 
     const cookieOption = {
@@ -34,7 +33,6 @@ const createSendResToken = (user, statusCode, res) => {
 // --- Register User ---
 export const registerUser = asyncHandler(async (req, res) => {
     const { username, password, email, nama } = req.body;
-
     if (!username || !password || !email || !nama) {
         res.status(400);
         throw new Error('username, password, email, dan nama tidak boleh kosong');
@@ -68,11 +66,9 @@ export const loginUser = asyncHandler(async (req, res) => {
 });
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
-    // Tambahkan await untuk menunggu hasil query
     const user = await User.findById(req.user._id).select('-password')
     
     if (user) {
-        // Menggunakan toObject untuk menghindari masalah sirkular
         res.status(200).json({
             user: user.toObject()  
         })
@@ -93,7 +89,7 @@ export const logoutUser = async(req, res) => {
     })
 }
 
-// --- Update User (tanpa hash password) ---
+
 export const updateUser = asyncHandler(async (req, res) => {
     const { username, email, nama, password, user_id } = req.body;
 
@@ -117,7 +113,7 @@ export const updateUser = asyncHandler(async (req, res) => {
     });
 });
 
-// --- Get All Users (dengan password) ---
+
 export const getAllUser = asyncHandler(async (req, res) => {
     const users = await User.find(); 
 
@@ -137,7 +133,6 @@ export const getUserById = asyncHandler(async (req, res) => {
         res.status(404);
         throw new Error("User tidak ditemukan");
     }
-
     res.status(200).json({
         message: "Berhasil mengambil data user",
         data: user

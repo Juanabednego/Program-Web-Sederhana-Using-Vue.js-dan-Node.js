@@ -1,5 +1,4 @@
 <template>
-  <!-- Loading state for initial login check -->
   <q-page v-if="isCheckingLogin" class="flex flex-center bg-grey-2">
     <q-spinner-dots color="primary" size="3em" />
     <div class="text-h6 text-grey-7 q-ml-md">Memuat halaman checkout...</div>
@@ -25,7 +24,6 @@
       </div>
 
       <div class="row q-col-gutter-md">
-        <!-- Shipping Information & Payment Method (Left Column) -->
         <div class="col-12 col-lg-8">
           <q-card class="shadow-2 rounded-borders q-pa-lg">
             <q-card-section>
@@ -126,7 +124,7 @@
           </q-card>
         </div>
 
-        <!-- Order Summary (Right Column) -->
+      
         <div class="col-12 col-lg-4">
           <q-card class="shadow-2 rounded-borders q-pa-lg">
             <q-card-section>
@@ -281,7 +279,6 @@ const submitOrder = async () => {
     return;
   }
   
-  
   if (!shippingAddress.value.address || !shippingAddress.value.city || !shippingAddress.value.postalCode || !shippingAddress.value.country) {
     error.value = 'Mohon lengkapi semua informasi pengiriman.';
     $q.notify({
@@ -410,5 +407,4 @@ const formatCurrency = (amount) => {
 <style scoped>
 
 </style>
-
 

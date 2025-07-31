@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia';
-import { useQuasar } from 'quasar'; // Import useQuasar untuk notifikasi
-
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9000/api/v1'; // Tidak langsung digunakan di sini, tapi di view Checkout
+import { useQuasar } from 'quasar'; 
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
@@ -10,7 +8,6 @@ export const useCartStore = defineStore('cart', {
   getters: {
     cartTotalItems: (state) => state.items.reduce((total, item) => total + item.quantity, 0),
     cartSubtotal: (state) => state.items.reduce((total, item) => total + (item.product.price * item.quantity), 0),
-    // totalAmount: (state) => state.items.reduce((total, item) => total + (item.product.price * item.quantity), 0) + state.shippingCost,
   },
   actions: {
     loadCartFromLocalStorage() {
@@ -48,7 +45,6 @@ export const useCartStore = defineStore('cart', {
             position: 'top',
             timeout: 3000
           });
-          // Opsional: tambahkan sejumlah stok yang tersedia jika diinginkan
           this.items.push({ product, quantity: product.stock });
         } else {
           this.items.push({ product, quantity });
@@ -58,7 +54,7 @@ export const useCartStore = defineStore('cart', {
     },
 
     updateCartItemQuantity(productId, newQuantity) {
-      const $q = useQuasar(); // Inisialisasi Quasar instance di dalam action
+      const $q = useQuasar(); 
 
       const itemIndex = this.items.findIndex(item => item.product._id === productId);
 
@@ -77,7 +73,6 @@ export const useCartStore = defineStore('cart', {
         if (newQuantity > 0) {
           item.quantity = newQuantity;
         } else {
-          // Hapus jika kuantitas 0 atau kurang
           this.items.splice(itemIndex, 1);
           $q.notify({
             type: 'info',
@@ -91,8 +86,6 @@ export const useCartStore = defineStore('cart', {
     },
 
     removeFromCart(productId) {
-      // Notifikasi untuk removeFromCart sudah ditangani di komponen Cart.vue
-      // melalui `confirmRemoveItem` yang memanggil `this.$q.dialog`
       this.items = this.items.filter(item => item.product._id !== productId);
       this.saveCartToLocalStorage();
     },

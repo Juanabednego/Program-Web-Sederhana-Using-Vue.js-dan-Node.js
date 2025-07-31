@@ -33,12 +33,12 @@ cloudinary.config({
 app.use(helmet())
 app.use(ExpressMongoSanitize())
 app.use(express.json()) // agar request body bisa json
-app.use(express.urlencoded({extended : true}))  // memasukkan inputan di urlencoded pada postman
+app.use(express.urlencoded({extended : true})) 
 app.use(cookieParser())
 app.use(express.static('./public'))
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:9000', // <-- Gunakan variabel env atau default
+  origin: process.env.FRONTEND_URL || 'http://localhost:9000',
   credentials: true
 }))
 

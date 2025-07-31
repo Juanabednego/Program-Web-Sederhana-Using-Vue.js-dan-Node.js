@@ -26,7 +26,7 @@ import {
   getFinancialReport,
   exportFinancialReportToExcel,
   exportFinancialReportToPdf,
-} from '../controllers/financialReportController.js'; // Import dari file baru
+} from '../controllers/financialReportController.js'; 
 
 import { protectedMiddleware, adminMiddleware } from '../middleware/authMiddleware.js';
 
@@ -60,7 +60,7 @@ router.route('/:id/complete')
 
 router.route('/:id/cancel')
   .put(protectedMiddleware, adminMiddleware, cancelOrder); 
-
+ 
 router.route('/:id/pay')
   .put(protectedMiddleware, adminMiddleware, updateOrderToPaid);
 

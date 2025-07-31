@@ -113,7 +113,7 @@ const chartOptions = ref({
     },
     title: {
       display: true,
-      text: 'Berdasarkan Kuantitas Terjual', // Sub-judul grafik
+      text: 'Berdasarkan Kuantitas Terjual', 
       font: {
         size: 16,
         weight: 'bold'

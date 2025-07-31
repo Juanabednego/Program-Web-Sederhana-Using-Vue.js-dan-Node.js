@@ -79,29 +79,28 @@
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import { useQuasar } from 'quasar'; // Import useQuasar untuk notifikasi
+import { useQuasar } from 'quasar'; 
 
-// Pastikan path ini benar di proyek Quasar Anda
+
 import BE_PRE_URL from 'src/url/index.js';
 
 const router = useRouter();
-const $q = useQuasar(); // Inisialisasi Quasar instance
+const $q = useQuasar();
 
 const isLoading = ref(false);
 
 const form = reactive({
   username: '',
   email: '',
-  name: '', // Sesuaikan dengan 'nama' di backend jika berbeda
+  name: '', 
   password: ''
 });
 
 const handleRegister = async () => {
-  // Clear previous notifications
+ 
   $q.notify({ group: false });
 
-  // Quasar's q-form with lazy-rules and rules will handle basic validation.
-  // We can add a more general check here if needed, but the form rules are primary.
+  
   if (!form.username || !form.email || !form.name || !form.password) {
     $q.notify({
       type: 'warning',
@@ -109,7 +108,7 @@ const handleRegister = async () => {
       position: 'top',
       timeout: 2000
     });
-    return; // Stop if basic fields are empty
+    return; 
   }
 
   isLoading.value = true;
@@ -118,7 +117,7 @@ const handleRegister = async () => {
     const response = await axios.post(`http://${BE_PRE_URL}/auth/register`, {
       username: form.username,
       email: form.email,
-      nama: form.name, // Pastikan ini sesuai dengan field di backend Anda (nama vs name)
+      nama: form.name,
       password: form.password
     });
 
@@ -157,5 +156,5 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-/* Tidak perlu lagi gaya kustom untuk input:focus karena Quasar menanganinya */
+
 </style>

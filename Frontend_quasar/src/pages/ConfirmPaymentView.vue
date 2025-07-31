@@ -252,7 +252,6 @@ const submitProofOfTransfer = async () => {
   try {
     console.log(`[ConfirmPaymentView] Submitting proof of transfer for orderId: ${orderId}`);
     console.log(`[ConfirmPaymentView] API URL: http://${BE_PRE_URL}/orders/${orderId}/upload-proof`);
-    // Mengubah axios.put menjadi axios.post
     const { data } = await axios.post(`http://${BE_PRE_URL}/orders/${orderId}/upload-proof`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -276,7 +275,7 @@ const submitProofOfTransfer = async () => {
     if (err.response && err.response.data && err.response.data.message) {
       errorMessage = err.response.data.message;
     }
-    uploadError.value = errorMessage; // Set uploadError.value di sini
+    uploadError.value = errorMessage; 
 
     $q.notify({
       type: 'negative',

@@ -7,7 +7,6 @@
           <div class="text-h4 text-weight-bold text-grey-9 q-mb-sm">Riwayat Pemesanan</div>
           <div class="text-subtitle1 text-grey-7">Kelola dan lacak semua pesanan Anda</div>
         </div>
-        <!-- Tombol Hubungi Admin (WhatsApp) - Lebih Jelas -->
         <q-btn
           color="green-7"
           icon="mdi-whatsapp"

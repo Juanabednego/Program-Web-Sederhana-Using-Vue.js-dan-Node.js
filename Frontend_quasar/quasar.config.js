@@ -1,6 +1,3 @@
-// Configuration for your app
-// https://v2.quasar.dev/quasar-cli-vite/quasar-config-file
-
 import { defineConfig } from '#q-app/wrappers'
 
 export default defineConfig((/* ctx */) => {
@@ -67,8 +64,7 @@ export default defineConfig((/* ctx */) => {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver
     devServer: {
-      // https: true,
-      open: true // opens browser window automatically
+    open: true
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
